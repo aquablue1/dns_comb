@@ -4,6 +4,8 @@
 " By Zhengping on 2018-11-26
 """
 
+# import sys
+# sys.path.append('/home/zhengping/DNS/DNSPythonWorkSpace')
 import json
 import os
 from src.util.FileReader import fileReader
@@ -182,7 +184,6 @@ def batchedDump(direction, date):
             os.makedirs(othersOutputFolder)
         with open(othersOutputFolder+outputilename, 'a') as f:
             json.dump(othersDict, f)
-
 
 
 if __name__ == '__main__':
