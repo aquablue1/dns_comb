@@ -20,9 +20,11 @@ def doTask(filename):
     emptyCount = 0
     nonemptyCount = 0
     for key in dataDict:
-        retmsg = int(dataDict[key]["conn"][2])
-        if retmsg == 0:
-            emptyCount += 1
-        else:
-            nonemptyCount += 1
+        if dataDict[key]["conn"][2] != "-":
+            # Ignore the "-" filesize
+            retmsg = int(dataDict[key]["conn"][2])
+            if retmsg == 0:
+                emptyCount += 1
+            else:
+                nonemptyCount += 1
     return [nonemptyCount, emptyCount]

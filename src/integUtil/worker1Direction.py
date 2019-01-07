@@ -3,6 +3,7 @@
 " Since inbound and outbound data are stored separately,
 " this method only returns the counting of current file.
 " Outer worker (batchedWorker) will control the direction count by using different target names.
+" Both the number of traces in conn log and number of dns queries are counted.
 " By Zhengping on 2019-01-06
 """
 
@@ -18,4 +19,8 @@ def doTask(filename):
     f = open(filename)
     dataDict = json.load(f)
     count = len(dataDict)
-    return [count]
+    dnsCount = 0
+    for k in dataDict:
+        if dataDict[k]["dns"]:
+            dnsCount += len(dataDict[k]["dns"])
+    return [count, dnsCount]

@@ -26,7 +26,7 @@ if __name__ == '__main__':
     #
     # # task2 tuple Warning! issue with this task!
     # taskname = "worker2Weird"
-    # outputname = "weordG"
+    # outputname = "weirdG"
     #
     # # task3 tuple
     # taskname = "worker3ReturnMsg"

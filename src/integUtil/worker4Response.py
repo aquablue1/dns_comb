@@ -25,10 +25,11 @@ def doTask(filename):
     responselessCount = 0
     responseCount = 0
     for key in dataDict:
-        for dnsmsg in dataDict[key]["dns"]:
-            responsemsg = dnsmsg[3]
-            if responsemsg == "-":
-                responselessCount += 1
-            else:
-                responseCount += 1
+        if dataDict[key]["dns"]:
+            for dnsmsg in dataDict[key]["dns"]:
+                responsemsg = dnsmsg[3]
+                if responsemsg == "-":
+                    responselessCount += 1
+                else:
+                    responseCount += 1
     return [responseCount, responselessCount]
