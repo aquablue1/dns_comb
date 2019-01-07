@@ -14,6 +14,7 @@ from src.util.IsFileExist import isFileExist
 import os
 import importlib
 import datetime
+from datetime import time
 
 class batchedWorker():
     def __init__(self, targetList, taskname, outputname):
@@ -22,16 +23,30 @@ class batchedWorker():
         self.staticCount = {}
         self.outputname = outputname
 
-    def getTargetFolderList(self, start=0, end=0):
+    def getTargetFolderList(self, start="2015-01-01", end="2100-12-31"):
         targetFolderList = []
-        repository = "result"
+        repository = "struct"
+        dateStart = datetime.datetime(int(start.split("-")[0]),
+                                      int(start.split("-")[1]),
+                                      int(start.split("-")[2]))
+        dateEnd = datetime.datetime(int(end.split("-")[0]),
+                                      int(end.split("-")[1]),
+                                      int(end.split("-")[2]))
         for target in self.targetList:
             targetFatherFolder = "../../%s/%s" % (repository, target)
             fatherFolder = folderReader(targetFatherFolder)
             for folder in fatherFolder:
-                print(folder)
-                # add range control (start, end) here if necessary.
-                targetFolderList.append(folder)
+                # print(folder)
+                dateCurStr = folder.split("/")[-1]
+                dateCur = datetime.datetime(int(dateCurStr.split("-")[0]),
+                                            int(dateCurStr.split("-")[1]),
+                                            int(dateCurStr.split("-")[2]))
+                if dateStart <= dateCur < dateEnd:
+                    # add range control (start, end) here if necessary.
+                    targetFolderList.append(folder)
+                else:
+                    # ignore those not in the target range
+                    pass
         targetFolderList.sort()
         return targetFolderList
 

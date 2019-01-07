@@ -4,8 +4,8 @@
 " By Zhengping on 2018-11-26
 """
 
-# import sys
-# sys.path.append('/home/zhengping/DNS/DNSPythonWorkSpace')
+import sys
+sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
 import json
 import os
 from src.util.FileReader import fileReader
@@ -39,9 +39,9 @@ def batchedDump(direction, date):
     errorLog = "../../result/error.log"
     errorOut = fileWriter(errorLog)
 
-    connFoldername = "../../datasample/conn_%sbound/%s/" % (direction, date)
-    dnsFoldername = "../../datasample/dns_%sbound/%s/" % (direction, date)
-    weirdFoldername = "../../datasample/weird_%sbound/%s/" % (direction, date)
+    connFoldername = "../../data/conn_%sbound/%s/" % (direction, date)
+    dnsFoldername = "../../data/dns_%sbound/%s/" % (direction, date)
+    weirdFoldername = "../../data/weird_%sbound/%s/" % (direction, date)
 
 
     # CLNS Lists and the corresponding IPs
@@ -56,18 +56,19 @@ def batchedDump(direction, date):
     Unknown205List = ["136.159.205.37", "136.159.205.38", "136.159.205.39"]
     # Others
 
-    # Init CLNS related dicts
-    akamaiDict = {}
-    campusDict = {}
-    campusNewDict = {}
-    cpscDict = {}
-    physDict = {}
-    auroraDict = {}
 
-    # Init UNS related dicts
-    unknown205Dict = {}
-    othersDict = {}
-    for hour in range(0, 1):
+    for hour in range(0, 24):
+        # Init CLNS related dicts
+        akamaiDict = {}
+        campusDict = {}
+        campusNewDict = {}
+        cpscDict = {}
+        physDict = {}
+        auroraDict = {}
+
+        # Init UNS related dicts
+        unknown205Dict = {}
+        othersDict = {}
         print("Start task: %s" % hour)
 
         hour = str(hour).zfill(2)
@@ -100,14 +101,14 @@ def batchedDump(direction, date):
                 targetDict[uid]["conn"] = connList
 
         # handle all the dns files
-        # ToDo: Urgent! need to add the duplication avoidance plugin here to avoid the duplication problem.
+        # Done: Urgent! need to add the duplication avoidance plugin here to avoid the duplication problem.
         # The duplication can be checked by verify the transID field. However, this might affect some
         # DNS retransmission msgs, but since the retransmission is limited in number. This approach should
         # be acceptable.
         dnsfile = fileReader(dnsFilename)
         for line in dnsfile:
             line_list = line.strip().split("\t")
-            uid = line_list[connFTL["uid"]]
+            uid = line_list[dnsFTL["uid"]]
             checkedIP = line_list[dnsFTL["dstIP"]]
             targetDict = dictSelection(checkedIP)
             dnsList = [line_list[dnsFTL["transID"]], line_list[dnsFTL["rtt"]],
@@ -117,8 +118,14 @@ def batchedDump(direction, date):
             try:
                 if not targetDict[uid]["dns"]:
                     targetDict[uid]["dns"] = []
-                # ToDo: add transID check here to avoid the duplication.
-                targetDict[uid]["dns"].append(dnsList)
+                # Done: add transID check here to avoid the duplication.
+                    targetDict[uid]["dns"].append(dnsList)
+                else:
+                    existTIDList = [dnsr[0] for dnsr in targetDict[uid]["dns"]]
+                    tID = dnsList[0]
+                    if tID not in existTIDList:
+                        targetDict[uid]["dns"].append(dnsList)
+
             except KeyError as keyE:
                 # errorOut.writeString("DNS UID Not Found: %s.\n" % uid)
                 pass
@@ -126,8 +133,8 @@ def batchedDump(direction, date):
         weirdfile = fileReader(weirdFilename)
         for line in weirdfile:
             line_list = line.strip().split("\t")
-            uid = line_list[connFTL["uid"]]
-            checkedIP = line_list[dnsFTL["dstIP"]]
+            uid = line_list[weirdFTL["uid"]]
+            checkedIP = line_list[weirdFTL["dstIP"]]
             targetDict = dictSelection(checkedIP)
             weirdList = [line_list[weirdFTL["weirdName"]], line_list[weirdFTL["addl"]],
                          line_list[weirdFTL["notice"]], line_list[weirdFTL["peer"]]]
@@ -144,49 +151,49 @@ def batchedDump(direction, date):
 
         # output all the dicts as json file.
         outputilename = "%s_%s.log" % (date, hour)
-        akamaiOutputFolder = "../../result/akamai/%s/" % (date)
+        akamaiOutputFolder = "../../struct/inakamai/%s/" % (date)
         if not os.path.exists(akamaiOutputFolder):
             os.makedirs(akamaiOutputFolder)
         with open(akamaiOutputFolder+outputilename, 'a') as f:
             json.dump(akamaiDict, f)
 
-        campusOutputFolder = "../../result/campus/%s/" % (date)
+        campusOutputFolder = "../../struct/incampus/%s/" % (date)
         if not os.path.exists(campusOutputFolder):
             os.makedirs(campusOutputFolder)
         with open(campusOutputFolder+outputilename, 'a') as f:
             json.dump(campusDict, f)
 
-        campusNewOutputFolder = "../../result/campusNew/%s/" % (date)
+        campusNewOutputFolder = "../../struct/incampusNew/%s/" % (date)
         if not os.path.exists(campusNewOutputFolder):
             os.makedirs(campusNewOutputFolder)
         with open(campusNewOutputFolder+outputilename, 'a') as f:
             json.dump(campusNewDict, f)
 
-        cpscOutputFolder = "../../result/cpsc/%s/" % (date)
+        cpscOutputFolder = "../../struct/incpsc/%s/" % (date)
         if not os.path.exists(cpscOutputFolder):
             os.makedirs(cpscOutputFolder)
         with open(cpscOutputFolder+outputilename, 'a') as f:
             json.dump(cpscDict, f)
 
-        physOutputFolder = "../../result/phys/%s/" % (date)
+        physOutputFolder = "../../struct/inphys/%s/" % (date)
         if not os.path.exists(physOutputFolder):
             os.makedirs(physOutputFolder)
         with open(physOutputFolder+outputilename, 'a') as f:
             json.dump(physDict, f)
 
-        auroraOutputFolder = "../../result/aurora/%s/" % (date)
+        auroraOutputFolder = "../../struct/inaurora/%s/" % (date)
         if not os.path.exists(auroraOutputFolder):
             os.makedirs(auroraOutputFolder)
         with open(auroraOutputFolder+outputilename, 'a') as f:
             json.dump(auroraDict, f)
 
-        unknown205OutputFolder = "../../result/unknown205/%s/" % (date)
+        unknown205OutputFolder = "../../struct/inunknown205/%s/" % (date)
         if not os.path.exists(unknown205OutputFolder):
             os.makedirs(unknown205OutputFolder)
         with open(unknown205OutputFolder+outputilename, 'a') as f:
             json.dump(unknown205Dict, f)
 
-        othersOutputFolder = "../../result/others/%s/" % (date)
+        othersOutputFolder = "../../struct/inothers/%s/" % (date)
         if not os.path.exists(othersOutputFolder):
             os.makedirs(othersOutputFolder)
         with open(othersOutputFolder+outputilename, 'a') as f:

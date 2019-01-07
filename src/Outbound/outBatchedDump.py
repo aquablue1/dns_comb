@@ -57,15 +57,16 @@ def batchedDump(direction, date):
 
     # Others
 
-    # Init CLNS related dicts
-    akamaiDict = {}
-    campus1Dict = {}
-    campus2Dict = {}
-    cpscDict = {}
-    webpaxDict = {}
+    for hour in range(0, 24):
 
-    othersDict = {}
-    for hour in range(0, 1):
+        # Init CLNS related dicts
+        akamaiDict = {}
+        campus1Dict = {}
+        campus2Dict = {}
+        cpscDict = {}
+        webpaxDict = {}
+
+        othersDict = {}
         print("Start task: %s" % hour)
 
         hour = str(hour).zfill(2)
@@ -101,7 +102,7 @@ def batchedDump(direction, date):
         dnsfile = fileReader(dnsFilename)
         for line in dnsfile:
             line_list = line.strip().split("\t")
-            uid = line_list[connFTL["uid"]]
+            uid = line_list[dnsFTL["uid"]]
             checkedIP = line_list[dnsFTL["srcIP"]]
             targetDict = dictSelection(checkedIP)
             dnsList = [line_list[dnsFTL["transID"]], line_list[dnsFTL["rtt"]],
@@ -111,15 +112,22 @@ def batchedDump(direction, date):
             try:
                 if not targetDict[uid]["dns"]:
                     targetDict[uid]["dns"] = []
-                targetDict[uid]["dns"].append(dnsList)
+                    targetDict[uid]["dns"].append(dnsList)
+                else:
+                    # Remove duplicated dns traces.
+                    existTIDList = [dnsr[0] for dnsr in targetDict[uid]["dns"]]
+                    tID = dnsList[0]
+                    if tID not in existTIDList:
+                        targetDict[uid]["dns"].append(dnsList)
             except KeyError as keyE:
-                errorOut.writeString("DNS UID Not Found: %s.\n" % uid)
+                # errorOut.writeString("DNS UID Not Found: %s.\n" % uid)
+                pass
         # handle all the weird files
         weirdfile = fileReader(weirdFilename)
         for line in weirdfile:
             line_list = line.strip().split("\t")
-            uid = line_list[connFTL["uid"]]
-            checkedIP = line_list[dnsFTL["srcIP"]]
+            uid = line_list[weirdFTL["uid"]]
+            checkedIP = line_list[weirdFTL["srcIP"]]
             targetDict = dictSelection(checkedIP)
             weirdList = [line_list[weirdFTL["weirdName"]], line_list[weirdFTL["addl"]],
                          line_list[weirdFTL["notice"]], line_list[weirdFTL["peer"]]]
@@ -135,56 +143,48 @@ def batchedDump(direction, date):
         print("Start dump: %s\n" %date)
 
         # output all the dicts as json file.
-        outputilename = "%s_%s_%s.log" % (direction, date, hour)
-        akamaiOutputFolder = "../../result/akamaiOut/%s/" % (date)
+        outputilename = "%s_%s.log" % (date, hour)
+        akamaiOutputFolder = "../../struct/outakamai/%s/" % (date)
         if not os.path.exists(akamaiOutputFolder):
             os.makedirs(akamaiOutputFolder)
         with open(akamaiOutputFolder+outputilename, 'a') as f:
             json.dump(akamaiDict, f)
 
-        campus1OutputFolder = "../../result/campus1Out/%s/" % (date)
+        campus1OutputFolder = "../../struct/outcampus1/%s/" % (date)
         if not os.path.exists(campus1OutputFolder):
             os.makedirs(campus1OutputFolder)
         with open(campus1OutputFolder+outputilename, 'a') as f:
             json.dump(campus1Dict, f)
 
-        campus2OutputFolder = "../../result/campus2Out/%s/" % (date)
+        campus2OutputFolder = "../../struct/outcampus2/%s/" % (date)
         if not os.path.exists(campus2OutputFolder):
             os.makedirs(campus2OutputFolder)
         with open(campus2OutputFolder+outputilename, 'a') as f:
             json.dump(campus2Dict, f)
 
-        cpscOutputFolder = "../../result/cpscOut/%s/" % (date)
+        cpscOutputFolder = "../../struct/outcpsc/%s/" % (date)
         if not os.path.exists(cpscOutputFolder):
             os.makedirs(cpscOutputFolder)
         with open(cpscOutputFolder+outputilename, 'a') as f:
             json.dump(cpscDict, f)
 
-        webpaxOutputFolder = "../../result/webpaxOut/%s/" % (date)
+        webpaxOutputFolder = "../../struct/outwebpax/%s/" % (date)
         if not os.path.exists(webpaxOutputFolder):
             os.makedirs(webpaxOutputFolder)
         with open(webpaxOutputFolder+outputilename, 'a') as f:
             json.dump(webpaxDict, f)
 
-        othersOutputFolder = "../../result/othersOut/%s/" % (date)
+        othersOutputFolder = "../../struct/outothers/%s/" % (date)
         if not os.path.exists(othersOutputFolder):
             os.makedirs(othersOutputFolder)
         with open(othersOutputFolder+outputilename, 'a') as f:
             json.dump(othersDict, f)
 
+    errorOut.close()
 
 
 if __name__ == '__main__':
-    dateList = ["2018-09-%s" % str(d).zfill(2) for d in range(1, 20)]
+    dateList = ["2018-09-%s" % str(d).zfill(2) for d in range(1, 31)]
     for date in dateList:
-        direction = "out"
-        batchedDump(direction, date)
-
-"""
--bash-4.2$ nohup python3.6 outBatchedDump.py > outBatchedDump.log 2>&1 &
-[2] 30138
--bash-4.2$
--bash-4.2$
--bash-4.2$
--bash-4.2$
-"""
+        _DIRECTION = "out"
+        batchedDump(_DIRECTION, date)
