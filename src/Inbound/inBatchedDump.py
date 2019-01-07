@@ -100,6 +100,10 @@ def batchedDump(direction, date):
                 targetDict[uid]["conn"] = connList
 
         # handle all the dns files
+        # ToDo: Urgent! need to add the duplication avoidance plugin here to avoid the duplication problem.
+        # The duplication can be checked by verify the transID field. However, this might affect some
+        # DNS retransmission msgs, but since the retransmission is limited in number. This approach should
+        # be acceptable.
         dnsfile = fileReader(dnsFilename)
         for line in dnsfile:
             line_list = line.strip().split("\t")
@@ -113,9 +117,11 @@ def batchedDump(direction, date):
             try:
                 if not targetDict[uid]["dns"]:
                     targetDict[uid]["dns"] = []
+                # ToDo: add transID check here to avoid the duplication.
                 targetDict[uid]["dns"].append(dnsList)
             except KeyError as keyE:
-                errorOut.writeString("DNS UID Not Found: %s.\n" % uid)
+                # errorOut.writeString("DNS UID Not Found: %s.\n" % uid)
+                pass
         # handle all the weird files
         weirdfile = fileReader(weirdFilename)
         for line in weirdfile:
@@ -130,7 +136,8 @@ def batchedDump(direction, date):
                     targetDict[uid]["weird"] = []
                 targetDict[uid]["weird"].append(weirdList)
             except KeyError as keyE:
-                errorOut.writeString("Weird UID Not Found: %s.\n" % uid)
+                # errorOut.writeString("Weird UID Not Found: %s.\n" % uid)
+                pass
         print("Finish task: %s" % hour)
 
         print("Start dump: %s\n" %date)
@@ -187,7 +194,8 @@ def batchedDump(direction, date):
 
 
 if __name__ == '__main__':
-    date = "2018-09-01"
-    direction = "in"
-    batchedDump(direction, date)
-
+    dateList = ["2018-09-%s" % str(d).zfill(2) for d in range(1, 31)]
+    for date in dateList:
+        # Warning! direction is fixed as “IN” here.
+        _DIRECTION = "in"
+        batchedDump(_DIRECTION, date)
