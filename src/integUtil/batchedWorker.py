@@ -29,6 +29,7 @@ class batchedWorker():
             targetFatherFolder = "../../%s/%s" % (repository, target)
             fatherFolder = folderReader(targetFatherFolder)
             for folder in fatherFolder:
+                print(folder)
                 # add range control (start, end) here if necessary.
                 targetFolderList.append(folder)
         targetFolderList.sort()
