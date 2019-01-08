@@ -42,7 +42,7 @@ if __name__ == '__main__':
     for fold in foldlist:
         fileList = bworker.getTargetFileList(fold)
         for filename in fileList:
-            bworker.actWorker(filename)
-    bworker.dump()
+            bworker.actCountWorker(filename)
+    bworker.dumpCount()
 
 

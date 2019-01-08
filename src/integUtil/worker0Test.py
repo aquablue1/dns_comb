@@ -4,7 +4,7 @@
 """
 
 
-def doTask(filename=None):
+def doCountTask(filename=None):
     print(filename)
     return [10, 20]
 

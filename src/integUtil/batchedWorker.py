@@ -15,12 +15,15 @@ import os
 import importlib
 import datetime
 from datetime import time
+from collections import Counter
+import json
 
 class batchedWorker():
     def __init__(self, targetList, taskname, outputname):
         self.targetList = targetList
         self.taskname = taskname
         self.staticCount = {}
+        self.staticCollector = Counter()
         self.outputname = outputname
 
     def getTargetFolderList(self, start="2015-01-01", end="2100-12-31"):
@@ -58,19 +61,19 @@ class batchedWorker():
         targetFileList.sort()
         return targetFileList
 
-    def actWorker(self, filename):
+    def actCountWorker(self, filename):
         module = importlib.import_module("src.integUtil.%s" % (self.taskname))
-        func = getattr(module, "doTask")
+        func = getattr(module, "doCountTask")
         static = func(filename)
         datetimeKey = filename.split("/")[-1].split(".")[0]
         try:
             self.staticCount[datetimeKey] = [a+b for a, b in zip(self.staticCount[datetimeKey], static)]
         except KeyError:
             self.staticCount[datetimeKey] = static
-        targetname = filename.split("/")[-3] # influenced by line: 28
+        targetname = filename.split("/")[-3] # influenced by line: targetFatherFolder = "../../%s/%s" % (repository, target)
         print("Job Done %s: %s===%s" % (self.taskname, targetname, datetimeKey))
 
-    def dump(self):
+    def dumpCount(self):
         outputFilename = "../../analResult/batchedWork/%s.log" % (self.outputname)
         outputF = fileWriter(outputFilename)
         for key in self.staticCount.keys():
@@ -83,6 +86,38 @@ class batchedWorker():
         print("All Job Done: %s. At: %s" % (self.taskname, str(currentDT)))
 
 
+    def actCollectWorker(self, filename, topK=None):
+        """
+        " Define the behavior of a collector here
+        " Unlike the counter which only returns the static result (count)
+        " The collector records both infomation and its counter, in the format of a dict.
+        " It calls all the collect workers with has a capital letter G as the end in their module names.
+        " Since the counter is used. In order to reduce the output size, another parameter topK is used
+        " To control top-K result from output.
+        " the output is a collector dict. which hires the date as key and top-k dict as value.
+        :param filename: the target filename
+        :param topK: topK result that want to collect from target filename.
+        :return: a collector dict which stored as a global parameter, i.e. self.staticCollector
+        """
+        module = importlib.import_module("src.integUtil.%s" % (self.taskname))
+        func = getattr(module, "doCollectTask")
+        static = func(filename, topK)
+        datetimeKey = filename.split("/")[-1].split(".")[0]
+        try:
+            self.staticCollector[datetimeKey] += static
+        except KeyError:
+            self.staticCount[datetimeKey] = static
+        targetname = filename.split("/")[-3] # influenced by line: targetFatherFolder = "../../%s/%s" % (repository, target)
+        print("Job Done %s: %s===%s" % (self.taskname, targetname, datetimeKey))
+
+    def dumpCollector(self):
+        outputFilename = "../../analResult/batchedCollectWork/%s.log" % (self.outputname)
+        with open(outputFilename, 'a') as f:
+            json.dump(self.staticCollector, f)
+        currentDT = datetime.datetime.now()
+        print("All Job Done: %s. At: %s" % (self.taskname, str(currentDT)))
+
+
 if __name__ == '__main__':
     bworker = batchedWorker([sys.argv[1]], "worker0Test", "test")
     foldlist = bworker.getTargetFolderList()
@@ -90,5 +125,5 @@ if __name__ == '__main__':
     for fold in foldlist:
         fileList = bworker.getTargetFileList(fold)
         for filename in fileList:
-            bworker.actWorker(filename)
+            bworker.actCountWorker(filename)
     # bworker.dump()

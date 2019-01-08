@@ -14,7 +14,7 @@
 
 import json
 
-def doTask(filename):
+def doCountTask(filename):
     """
     count how many dns queries have actual responses.
     :param filename: name of the searched file

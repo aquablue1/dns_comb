@@ -9,7 +9,7 @@
 
 import json
 
-def doTask(filename):
+def doCountTask(filename):
     """
     count how many lines of record has return msg size equals 0
     :param filename: name of the searched file
