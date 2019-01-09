@@ -11,4 +11,4 @@ def doCountTask(filename=None):
 
 if __name__ == '__main__':
     filename = "../helloworld"
-    doTask(filename)
+    doCountTask(filename)

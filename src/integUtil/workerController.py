@@ -6,23 +6,41 @@ import sys
 sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
 from src.integUtil.batchedWorker import batchedWorker
 
-if __name__ == '__main__':
-    # Test tasklist
-    # targetList = ["inphys"]
-    # Inbound global taskList
-    targetList = ["inakamai", "inaurora", "incampus", "incampusNew", 
+
+def collectorController():
+    targetList = ["inakamai", "inaurora", "incampus", "incampusNew",
                   "incpsc", "inothers", "inphys", "inunknown205"]
+    for target in targetList:
+        taskname = "worker2D1WeirdIn"
+        outputname = "%sWeirdInCollTen" % (target)
+
+        bworker = batchedWorker([targetList], taskname, outputname)
+        foldlist = bworker.getTargetFolderList("2018-09-01", "2018-09-11")
+        # print(bworker.getTargetFileList(foldlist[0]))
+        for fold in foldlist:
+            fileList = bworker.getTargetFileList(fold)
+            for filename in fileList:
+                bworker.actCollectWorker(filename, 10)
+        bworker.dumpCollector()
+
+
+def counterColtroller():
+    # Test tasklist
+    targetList = ["inphys"]
+    # Inbound global taskList
+    # targetList = ["inakamai", "inaurora", "incampus", "incampusNew",
+    #               "incpsc", "inothers", "inphys", "inunknown205"]
     # # Outbound global taskList
-    # targetList = ["outakamai", "outcampus1", "outcampus2", 
+    # targetList = ["outakamai", "outcampus1", "outcampus2",
     #               "outcpsc", "outothers", "outwebpax"]
     #
-    # # task0 tuple
-    # taskname = "worker0Test"
-    # outputname = "test"
+    # task0 tuple
+    taskname = "worker0Test"
+    outputname = "test"
     #
-    # task1 tuple
-    taskname = "worker1Direction"
-    outputname = "directionG" # G indicates global
+    # # task1 tuple
+    # taskname = "worker1Direction"
+    # outputname = "directionG" # G indicates global
     #
     # # task2 tuple Warning! issue with this task!
     # taskname = "worker2Weird"
@@ -35,6 +53,9 @@ if __name__ == '__main__':
     # # task4 tuple
     # taskname = "worker4Response"
     # outputname = "responseG"
+    #
+    # User Define Field:
+
 
     bworker = batchedWorker(targetList, taskname, outputname)
     foldlist = bworker.getTargetFolderList("2018-09-01", "2018-09-02")
@@ -46,3 +67,7 @@ if __name__ == '__main__':
     bworker.dumpCount()
 
 
+if __name__ == '__main__':
+    # counterColtroller()
+    collectorController()
+    print("Job Done! EXIT()")

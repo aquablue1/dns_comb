@@ -85,8 +85,8 @@ def batchedDump(direction, date):
             targetDict[uid] = {"ts"   : line_list[connFTL["timestamp"]],
                                 "addr" : (line_list[connFTL["srcIP"]],
                                        line_list[connFTL["srcPort"]],
-                                       line_list[connFTL["srcIP"]],
-                                       line_list[connFTL["srcPort"]]),
+                                       line_list[connFTL["dstIP"]],
+                                       line_list[connFTL["dstPort"]]),
                                 "conn" : None,
                                 "dns"  : None,
                                 "weird": None
@@ -122,6 +122,7 @@ def batchedDump(direction, date):
             except KeyError as keyE:
                 # errorOut.writeString("DNS UID Not Found: %s.\n" % uid)
                 pass
+
         # handle all the weird files
         weirdfile = fileReader(weirdFilename)
         for line in weirdfile:

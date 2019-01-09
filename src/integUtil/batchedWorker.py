@@ -15,7 +15,6 @@ import os
 import importlib
 import datetime
 from datetime import time
-from collections import Counter
 import json
 
 class batchedWorker():
@@ -23,7 +22,7 @@ class batchedWorker():
         self.targetList = targetList
         self.taskname = taskname
         self.staticCount = {}
-        self.staticCollector = Counter()
+        self.staticCollector = {}
         self.outputname = outputname
 
     def getTargetFolderList(self, start="2015-01-01", end="2100-12-31"):
@@ -106,7 +105,7 @@ class batchedWorker():
         try:
             self.staticCollector[datetimeKey] += static
         except KeyError:
-            self.staticCount[datetimeKey] = static
+            self.staticCollector[datetimeKey] = static
         targetname = filename.split("/")[-3] # influenced by line: targetFatherFolder = "../../%s/%s" % (repository, target)
         print("Job Done %s: %s===%s" % (self.taskname, targetname, datetimeKey))
 
