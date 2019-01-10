@@ -10,6 +10,10 @@ from src.integUtil.batchedWorker import batchedWorker
 def collectorController():
     targetList = ["inakamai", "inaurora", "incampus", "incampusNew",
                   "incpsc", "inothers", "inphys", "inunknown205"]
+
+    targetList = ["outakamai", "outcampus1", "outcampus2",
+                  "outcpsc", "outothers", "outwebpax"]
+
     for target in targetList:
         taskname = "worker2D1WeirdIn"
         outputname = "%sWeirdInCollTen" % (target)
