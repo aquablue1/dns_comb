@@ -20,9 +20,48 @@
 " In this script all the mentioned solutions are implemented. But the topK method is suggested.
 " ==> Problem 2:
 " The second problem is single file vs multiple files.
-" In some scenario data is stored in multiple files since they used to belong to different modules (e.g. outcampus1
-" and outcampus2), when an integrated analysis is required,
+" In some scenario data is stored in multiple files since they used to belong to different Objects (e.g. outcampus1
+" and outcampus2), when an integrated analysis is required, (To be continued...)
 " By Zhengping on 2019-01-10
 """
 
+
+import sys
 import json
+from src.util.FileWriter import fileWriter
+from collections import OrderedDict, Counter
+sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
+
+# Warning! at this stage, only a single file is handled. Means it will only accept a single file, and then dump it
+# to a single Line RecordFile
+
+def doSingleTrans(filename, outputFilename, assigObject=None, topK=None):
+    sigdict = {}
+    with open(filename, 'r') as f:
+        sigdict = json.load(f, object_pairs_hook=OrderedDict)
+    transObjectCounter = Counter()
+
+    if not assigObject:
+        # if Objects are not assigned, select the topK
+        for time in sigdict:
+            # First traversals the dict to get all the distinct Object name and the corresponding count.
+            for ObjectName in sigdict[time]:
+                transObjectCounter[ObjectName] += sigdict[time][ObjectName]
+        selectedObjects = [tup[0] for tup in transObjectCounter.most_common(topK)]
+    else:
+        selectedObjects = assigObject
+
+    # Init all the values as an empty list
+    transdict = dict([(obj, []) for obj in selectedObjects])
+    for time in sigdict:
+        for obj in selectedObjects:
+            if obj in sigdict[time].keys():
+                transdict[obj].append(sigdict[time][obj])
+            else:
+                # If Object does not exist at current time.
+                transdict[obj].append(0)
+
+    outputFoldername = "../../IOSpace/"
+    outputFile = outputFoldername + "/" + outputFilename
+    with open(outputFile, 'a') as f:
+        json.dump(transdict, f)
