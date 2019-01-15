@@ -11,12 +11,18 @@ sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
 from src.IO.JSDictToExchange import doMultipleTrans,doSingleTrans
 
 def singleController():
-    taskname = ""
-    filename = "%s.log" % taskname
-    outputFilename = "%s_trans.log" % taskname
-    topK = None
-    assigObject = None
-    doSingleTrans(filename, outputFilename, topK, assigObject)
+    moduleList = ["inakamai", "inaurora", "incampus", "incampusNew",
+                  "incpsc", "inothers", "inphys", "inunknown205"]
+    moduleList += ["outakamai", "outcampus1", "outcampus2",
+                  "outcpsc", "outothers", "outwebpax"]
+
+    taskList = ["%sTotalOutClusterCollFull" % module for module in moduleList]
+    for taskname in taskList:
+        filename = "%s.log" % taskname
+        outputFilename = "%s_trans.log" % taskname
+        topK = None
+        assigObject = None
+        doSingleTrans(filename, outputFilename, topK, assigObject)
 
 def multipleController():
     tasknameList = []
@@ -31,3 +37,5 @@ def multipleController():
 if __name__ == '__main__':
     singleController()
     # multipleController()
+
+ 

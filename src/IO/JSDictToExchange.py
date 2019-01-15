@@ -71,7 +71,7 @@ def doSingleTrans(filename, outputFilename, topK=None, assigObject=None):
                 # If Object does not exist at current time.
                 transdict[obj].append(0)
 
-    outputFoldername = "../../exchange/"
+    outputFoldername = "../../exchange"
     outputFile = outputFoldername + "/" + outputFilename
     with open(outputFile, 'a') as f:
         json.dump(transdict, f)
