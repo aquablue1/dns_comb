@@ -1,19 +1,7 @@
 """
-" The purpose of this class is to draw the time series plot according to the given input file
-" There are three major steps in order to do the visualization:
-" First, load the json file.
-" Second, decide the object and time period that will show in the figure
-" Third, set all the suitable parameters and show the graph
-" Loading is a easy task
-" For object and time period selection, according to the methods defined in <code>JSDictToExchange</code>,
-" time period is not defined so users need to define the time period by themselves. This (<code>timePlot</code>)
-" class will only obey the defined time period if it matches the length of input data. There is no mechanism to verify
-" if the time period is correct or not.
-" This class will only support the visualization of one single graph in one round of running, i.e. sub-graph is not
-" supported. However, multiple plots in one graph is supported by call <code>doDrawPlot</code> multiple times.
-" Also, only time series plot is supported, the other formats such as log scale (in x-axis) graph or even Pie charts
-" are not supported.
-" By Zhengping on 2019-01-14
+" Draft version for timePlot
+" Used for simple and random tasks
+" By Zhengping on 2019-01-17
 """
 
 import sys
@@ -139,25 +127,54 @@ if __name__ == '__main__':
 
     targetList += ["outakamai", "outcampus1", "outcampus2",
                   "outcpsc", "outothers", "outwebpax"]
-
+    # targetList = ["inakamai"]
     for target in targetList:
         index = 1
-        foldername = "../../exchange/weird/"
-        filename = "%sWeirdOutClusterCollTen_trans.log" % target
-        p = timePlot(foldername + filename, logRequ=True)
-        objList1 = list(p.rawdata.keys())
+        foldername = "../../exchange/total/"
+        filename = "%sTotalOutByteClusterCollTen_trans.log" % target
+        pout = timePlot(foldername + filename, logRequ=True)
+        valueList1 = list(pout.rawdata.values())
+        totalOut = valueList1[0]
+        for valuelist in valueList1[1:]:
+            for i in range(len(totalOut)):
+                totalOut[i] += valuelist[i]
 
-        for objname in objList1:
-            foldernametotal = "../../exchange/total/"
-            filenametotal = "%sTotalOutClusterCollFull_trans.log" % target
-            ptotal = timePlot(foldernametotal + filenametotal, logRequ=True)
-            ptotal.doDrawPlot([objname], "total", "black", "-")
+        foldernametotal = "../../exchange/total/"
+        filenametotal = "%sTotalInByteClusterCollTen_trans.log" % target
+        pin = timePlot(foldernametotal + filenametotal, logRequ=True)
+        valueList2 = list(pin.rawdata.values())
+        totalIn = valueList2[0]
+        for valuelist in valueList2[1:]:
+            for i in range(len(totalIn)):
+                totalIn[i] += valuelist[i]
 
-            # p.doShow()
+        # print(totalweird)
+        # print(totaltotal)
 
-            p.doDrawPlot([objname], "weird", "r", "-")
-            # p.doDrawPlot()
-            p.setParams(title="%s" % (objname))
-            p.doSave(index, target)
-            index += 1
-            # p.doShow()
+        logtotalIn = [math.log10(i+1)-3 for i in totalIn]
+        logtotalOut = [math.log10(i+1)-3 for i in totalOut]
+        xdata = list(range(1, 1+len(totalIn)))
+        plt.plot(xdata, logtotalIn, color="red", label="Inbound Volume")
+        plt.plot(xdata, logtotalOut, color="blue", label="Outbound Volume")
+        plt.xticks(list(range(1, 24*10+1, 24)), ["2018-09-%s" % str(day).zfill(2) for day in range(1, 11)],
+                   rotation=24)
+
+        ysrc = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000]
+        plt.yticks([math.log10(i) for i in ysrc],
+                   ["0"]+["$10^{%d}$" % exp for exp in range(1, 9)])
+        #
+        plt.ylim((0,math.log10(100_000_000)))
+        plt.title(target)
+        plt.legend(loc="best")
+        plt.ylabel("Size (in KB)")
+        plt.savefig("../../figure/totalIO/%s_%s.pdf" % (target, "totalIO"), format='pdf')
+        plt.close()
+        # plt.show()
+        # p.doShow()
+        #
+        # p.doDrawPlot([objname], "weird", "r", "-")
+        # # p.doDrawPlot()
+        # p.setParams(title="%s" % (objname))
+        # p.doSave(index, target)
+        # index += 1
+        # # p.doShow()

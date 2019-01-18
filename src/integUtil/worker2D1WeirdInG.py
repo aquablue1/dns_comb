@@ -6,8 +6,11 @@
 " By Zhengping on 2019-01-08
 """
 
+import sys
 from collections import Counter
 import json
+sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
+from src.util.IPCluster import getIPCluster
 
 def doCollectTask(filename, topK):
     """
@@ -24,10 +27,11 @@ def doCollectTask(filename, topK):
             # Check direction first to get the inner server.
             srcIP = dataDict[key]["addr"][0]
             dstIP = dataDict[key]["addr"][2]
-            if srcIP.startswith("136.159."):
-                # Which means srcIP is within our campus. it should be an outbound traffic
-                weirdInCollect[srcIP] += 1
-            else:
-                weirdInCollect[dstIP] += 1
+            for _ in dataDict[key]["weird"]:
+                if srcIP.startswith("136.159."):
+                    # Which means srcIP is within our campus. it should be an outbound traffic
+                    weirdInCollect[getIPCluster(srcIP)] += 1
+                else:
+                    weirdInCollect[getIPCluster(dstIP)] += 1
 
     return Counter(dict(weirdInCollect.most_common(topK)))

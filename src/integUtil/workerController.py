@@ -11,7 +11,7 @@ def collectorController():
     targetList = ["inakamai", "inaurora", "incampus", "incampusNew",
                   "incpsc", "inothers", "inphys", "inunknown205"]
 
-    targetList = ["outakamai", "outcampus1", "outcampus2",
+    targetList += ["outakamai", "outcampus1", "outcampus2",
                   "outcpsc", "outothers", "outwebpax"]
 
     for target in targetList:
