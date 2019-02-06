@@ -23,6 +23,7 @@ class batchedWorker():
         self.taskname = taskname
         self.staticCount = {}
         self.staticCollector = {}
+        self.resultTrans = {}
         self.outputname = outputname
 
     def getTargetFolderList(self, start="2015-01-01", end="2100-12-31"):
@@ -84,7 +85,6 @@ class batchedWorker():
         currentDT = datetime.datetime.now()
         print("All Job Done: %s. At: %s" % (self.taskname, str(currentDT)))
 
-
     def actCollectWorker(self, filename, topK=None):
         """
         " Define the behavior of a collector here
@@ -116,7 +116,33 @@ class batchedWorker():
         currentDT = datetime.datetime.now()
         print("All Job Done: %s. At: %s" % (self.taskname, str(currentDT)))
 
+    def actTransWorker(self, filename):
+        """
+        :param filename:
+        :return:
+        """
+        module = importlib.import_module("src.integUtil.%s" % (self.taskname))
+        func = getattr(module, "doTransTask")
+        transResult_daily = func(filename)
+        for key in transResult_daily:
+            try:
+                self.resultTrans[key].append(transResult_daily[key])
+            except KeyError:
+                self.resultTrans[key] = transResult_daily[key]
+        targetname = filename.split("/")[-3] # influenced by line: targetFatherFolder = "../../%s/%s" % (repository, target)
+        datetime = filename.split("/")[-1].split(".")[0]
+        print("Job Done %s: %s===%s" % (self.taskname, targetname, datetime))
 
+    def dumpTrans(self):
+        """
+
+        :return:
+        """
+        outputFilename = "../../analResult/batchedTransWork/%s.log" % (self.outputname)
+        with open(outputFilename, 'a') as f:
+            json.dump(self.staticCollector, f)
+        currentDT = datetime.datetime.now()
+        print("All Job Done: %s. At: %s" % (self.taskname, str(currentDT)))
 
 if __name__ == '__main__':
     bworker = batchedWorker([sys.argv[1]], "worker0Test", "test")

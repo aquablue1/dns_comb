@@ -62,7 +62,7 @@ def counterColtroller():
 
 
     bworker = batchedWorker(targetList, taskname, outputname)
-    foldlist = bworker.getTargetFolderList("2018-09-01", "2018-09-02")
+    foldlist = bworker.getTargetFolderList("2018-09-01", "2018-09-11")
     # print(bworker.getTargetFileList(foldlist[0]))
     for fold in foldlist:
         fileList = bworker.getTargetFileList(fold)

@@ -28,10 +28,13 @@ def doCollectTask(filename, topK):
         # Check direction first to get the inner server.
         srcIP = dataDict[key]["addr"][0]
         dstIP = dataDict[key]["addr"][2]
-        if srcIP.startswith("136.159."):
-            # Which means srcIP is within our campus. it should be an outbound traffic
-            allOutCollect[IPDB[dstIP]["org"]] += 1
-        else:
-            allOutCollect[IPDB[srcIP]["org"]] += 1
+        try:
+            if srcIP.startswith("136.159."):
+                # Which means srcIP is within our campus. it should be an outbound traffic
+                allOutCollect[IPDB[dstIP]["org"]] += 1
+            else:
+                allOutCollect[IPDB[srcIP]["org"]] += 1
+        except KeyError:
+            print("Info not found %s." % (dataDict[key]))
 
     return Counter(dict(allOutCollect.most_common(topK)))
