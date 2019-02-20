@@ -28,7 +28,7 @@ class batchedWorker():
 
     def getTargetFolderList(self, start="2015-01-01", end="2100-12-31"):
         targetFolderList = []
-        repository = "struct"
+        repository = "structNew"
         dateStart = datetime.datetime(int(start.split("-")[0]),
                                       int(start.split("-")[1]),
                                       int(start.split("-")[2]))
@@ -116,14 +116,14 @@ class batchedWorker():
         currentDT = datetime.datetime.now()
         print("All Job Done: %s. At: %s" % (self.taskname, str(currentDT)))
 
-    def actTransWorker(self, filename):
+    def actTransWorker(self, filename, topK=None):
         """
         :param filename:
         :return:
         """
         module = importlib.import_module("src.integUtil.%s" % (self.taskname))
         func = getattr(module, "doTransTask")
-        transResult_daily = func(filename)
+        transResult_daily = func(filename, topK)
         for key in transResult_daily:
             try:
                 self.resultTrans[key].append(transResult_daily[key])

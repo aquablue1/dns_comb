@@ -11,7 +11,10 @@
 
 
 def getTLD(url):
-    return url.split(".")[-1]
+    if len(url.split(".")) > 1:
+        return url.split(".")[-1]
+    else:
+        return "-"
 
 
 if __name__ == '__main__':

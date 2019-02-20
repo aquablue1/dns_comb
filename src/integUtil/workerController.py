@@ -24,7 +24,7 @@ def collectorController():
         for fold in foldlist:
             fileList = bworker.getTargetFileList(fold)
             for filename in fileList:
-                bworker.actCollectWorker(filename, 10)
+                bworker.actCollectWorker(filename)
         bworker.dumpCollector()
 
 
@@ -71,7 +71,30 @@ def counterColtroller():
     bworker.dumpCount()
 
 
+def transController():
+    targetList = ["inakamai", "inaurora", "incampus", "incampusNew",
+                  "incpsc", "inothers", "inphys", "inunknown205"]
+
+    targetList += ["outakamai", "outcampus1", "outcampus2",
+                  "outcpsc", "outothers", "outwebpax"]
+
+    for target in targetList:
+        taskname = "worker8D1TransPopT"
+        outputname = "%sTransPop1000T" % (target)
+
+        bworker = batchedWorker([targetList], taskname, outputname)
+        foldlist = bworker.getTargetFolderList("2018-09-01", "2018-09-02")
+        # print(bworker.getTargetFileList(foldlist[0]))
+        for fold in foldlist:
+            fileList = bworker.getTargetFileList(fold)
+            for filename in fileList:
+                bworker.actTransWorker(filename)
+        bworker.dumpTrans()
+
+
+
 if __name__ == '__main__':
     # counterColtroller()
-    collectorController()
+    # collectorController()
+    transController()
     print("Job Done! EXIT()")

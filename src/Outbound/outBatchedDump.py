@@ -92,7 +92,9 @@ def batchedDump(direction, date):
                                 "weird": None
                                 }
             connList = [line_list[connFTL["duration"]], line_list[connFTL["sentByte"]],
-                        line_list[connFTL["recvByte"]], line_list[connFTL["endFlag"]]]
+                        line_list[connFTL["recvByte"]], line_list[connFTL["endFlag"]],
+                        line_list[connFTL["ipSentByte"]], line_list[connFTL["ipSentPack"]],
+                        line_list[connFTL["ipRecvByte"]], line_list[connFTL["ipRecvPack"]]]
             if targetDict[uid]["conn"]:
                 print("duplicated uid! date:%s_%s, uid=%s" % (date, hour, uid))
             else:
@@ -145,37 +147,37 @@ def batchedDump(direction, date):
 
         # output all the dicts as json file.
         outputilename = "%s_%s.log" % (date, hour)
-        akamaiOutputFolder = "../../struct/outakamai/%s/" % (date)
+        akamaiOutputFolder = "../../structNew/outakamai/%s/" % (date)
         if not os.path.exists(akamaiOutputFolder):
             os.makedirs(akamaiOutputFolder)
         with open(akamaiOutputFolder+outputilename, 'a') as f:
             json.dump(akamaiDict, f)
 
-        campus1OutputFolder = "../../struct/outcampus1/%s/" % (date)
+        campus1OutputFolder = "../../structNew/outcampus1/%s/" % (date)
         if not os.path.exists(campus1OutputFolder):
             os.makedirs(campus1OutputFolder)
         with open(campus1OutputFolder+outputilename, 'a') as f:
             json.dump(campus1Dict, f)
 
-        campus2OutputFolder = "../../struct/outcampus2/%s/" % (date)
+        campus2OutputFolder = "../../structNew/outcampus2/%s/" % (date)
         if not os.path.exists(campus2OutputFolder):
             os.makedirs(campus2OutputFolder)
         with open(campus2OutputFolder+outputilename, 'a') as f:
             json.dump(campus2Dict, f)
 
-        cpscOutputFolder = "../../struct/outcpsc/%s/" % (date)
+        cpscOutputFolder = "../../structNew/outcpsc/%s/" % (date)
         if not os.path.exists(cpscOutputFolder):
             os.makedirs(cpscOutputFolder)
         with open(cpscOutputFolder+outputilename, 'a') as f:
             json.dump(cpscDict, f)
 
-        webpaxOutputFolder = "../../struct/outwebpax/%s/" % (date)
+        webpaxOutputFolder = "../../structNew/outwebpax/%s/" % (date)
         if not os.path.exists(webpaxOutputFolder):
             os.makedirs(webpaxOutputFolder)
         with open(webpaxOutputFolder+outputilename, 'a') as f:
             json.dump(webpaxDict, f)
 
-        othersOutputFolder = "../../struct/outothers/%s/" % (date)
+        othersOutputFolder = "../../structNew/outothers/%s/" % (date)
         if not os.path.exists(othersOutputFolder):
             os.makedirs(othersOutputFolder)
         with open(othersOutputFolder+outputilename, 'a') as f:
@@ -185,7 +187,7 @@ def batchedDump(direction, date):
 
 
 if __name__ == '__main__':
-    dateList = ["2018-09-%s" % str(d).zfill(2) for d in range(1, 31)]
+    dateList = ["2018-09-%s" % str(d).zfill(2) for d in range(1, 11)]
     for date in dateList:
         _DIRECTION = "out"
         batchedDump(_DIRECTION, date)

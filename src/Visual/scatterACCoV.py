@@ -1,19 +1,5 @@
 """
-" The purpose of this class is to draw the time series plot according to the given input file
-" There are three major steps in order to do the visualization:
-" First, load the json file.
-" Second, decide the object and time period that will show in the figure
-" Third, set all the suitable parameters and show the graph
-" Loading is a easy task
-" For object and time period selection, according to the methods defined in <code>JSDictToExchange</code>,
-" time period is not defined so users need to define the time period by themselves. This (<code>timePlot</code>)
-" class will only obey the defined time period if it matches the length of input data. There is no mechanism to verify
-" if the time period is correct or not.
-" This class will only support the visualization of one single graph in one round of running, i.e. sub-graph is not
-" supported. However, multiple plots in one graph is supported by call <code>doDrawPlot</code> multiple times.
-" Also, only time series plot is supported, the other formats such as log scale (in x-axis) graph or even Pie charts
-" are not supported.
-" By Zhengping on 2019-01-14
+“
 """
 
 import sys
@@ -21,6 +7,9 @@ import os
 import json
 import matplotlib.pyplot as plt
 import math
+import numpy as np
+from src.util.AutoCorr import getAutoCorr
+from src.util.CoeffVar import getCoeffVar
 
 
 class timePlot():
@@ -125,39 +114,61 @@ class timePlot():
         plt.show()
 
     def doSave(self, index, target):
-        if not os.path.isdir("../../figure/comb/%s/" % target):
-            os.mkdir("../../figure/comb/%s/" % target)
-        plt.savefig("../../figure/comb/%s/%s_%s.pdf" % (target, target, str(index)), format='pdf')
+        if not os.path.isdir("../../figure/ACCoV/total/"):
+            os.mkdir("../../figure/ACCoV/total/")
+        # plt.savefig("../../figure/mean-std-Scatter/log_%s_ByIPCluster_TotalSessionCount.pdf" % (target), format='pdf')
+        plt.savefig("../../figure/ACCoV/total/%s_ByIPCluster_TotalACCoV.pdf" % (target), format='pdf')
+
         # plt.close(self.fig)
         plt.close()
 
 
 
-if __name__ == '__main__':
+def doPaintLog():
     targetList = ["inakamai", "inaurora", "incampus", "incampusNew",
                   "incpsc", "inothers", "inphys", "inunknown205"]
 
     targetList += ["outakamai", "outcampus1", "outcampus2",
                   "outcpsc", "outothers", "outwebpax"]
-    # targetList = ["outcampus1"]
+
+    # targetList = ["inphys"]
     for target in targetList:
-        index = 1
-        foldername = "../../exchange/total/"
-        filename = "%sTotalOutClusterCollFull_trans.log" % target
-        p = timePlot(foldername + filename, logRequ=True)
-        objList1 = list(p.rawdata.keys())
+        # foldernametotal = "../../exchange/total/"
+        # filenametotal = "%sTotalOutByteClusterCollTen_trans.log" % target
+        # foldernametotal = "../../exchange/TLD/"
+        # filenametotal = "%sTLDTotalG_trans.log" % target
+        foldernametotal = "../../exchange/total/"
+        # filenametotal = "%sTotalOutByteClusterCollTen_trans.log" % target
+        # filenametotal = "%sTotalInByteClusterCollTen_trans.log" % target
+        filenametotal = "%sTotalOutClusterCollFull_trans.log" % target
 
-        for objname in objList1:
-            foldernametotal = "../../exchange/total/"
-            filenametotal = "%sTotalOutClusterCollFull_trans.log" % target
-            ptotal = timePlot(foldernametotal + filenametotal, logRequ=True)
-            ptotal.doDrawPlot([objname], "total", "black", "-")
+        pTotal = timePlot(foldernametotal + filenametotal, logRequ=True)
+        scatterCoV = []
+        scatterAC = []
+        for TLDname in list(pTotal.rawdata.keys()):
+            # print(pTotal.rawdata[TLDname])
+            dataList = np.array(pTotal.rawdata[TLDname])
+            # dataList = np.array(pTotal.rawdata[TLDname])
+            scatterCoV.append(getCoeffVar(dataList))
+            scatterAC.append(getAutoCorr(dataList, 12))
+            # if getCoeffVar(dataList) >= 12.5:
+            #     print(TLDname)
+        plt.scatter(scatterCoV, scatterAC, color="black", marker="x", linewidths=0.5)
+        plt.title(target+"")
+        plt.xlim((-0.1, 20))
+        # plt.xticks(list(range(-1, 8)), ["0"] + ["$10^{%d}$" % i for i in range(0, 8)])
+        plt.xlabel("Coefficient of Variation (CoV)")
 
-            # p.doShow()
+        # plt.yticks(list(range(-1, 8)), ["0"] + ["$10^{%d}$" % i for i in range(0, 8)])
+        plt.text(1, -1, "Total Point #: %s" % "{:,}".format(len(scatterCoV)), size=10)
+        plt.plot([-1, 100], [0, 0], linestyle="--", color="black", linewidth=1)
+        plt.ylabel("Autocorrelation Coefficient at Lag=12")
+        plt.ylim((-1.1, 1.1))
+        # plt.show()
+        pTotal.doSave(0, target)
 
-            # p.doDrawPlot([objname], "weird", "r", "-")
-            # p.doDrawPlot()
-            p.setParams(title="%s" % (objname))
-            p.doSave(index, target)
-            index += 1
-            # p.doShow()
+
+if __name__ == '__main__':
+
+    # doPaintNorm()
+    doPaintLog()

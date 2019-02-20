@@ -1,19 +1,7 @@
 """
-" The purpose of this class is to draw the time series plot according to the given input file
-" There are three major steps in order to do the visualization:
-" First, load the json file.
-" Second, decide the object and time period that will show in the figure
-" Third, set all the suitable parameters and show the graph
-" Loading is a easy task
-" For object and time period selection, according to the methods defined in <code>JSDictToExchange</code>,
-" time period is not defined so users need to define the time period by themselves. This (<code>timePlot</code>)
-" class will only obey the defined time period if it matches the length of input data. There is no mechanism to verify
-" if the time period is correct or not.
-" This class will only support the visualization of one single graph in one round of running, i.e. sub-graph is not
-" supported. However, multiple plots in one graph is supported by call <code>doDrawPlot</code> multiple times.
-" Also, only time series plot is supported, the other formats such as log scale (in x-axis) graph or even Pie charts
-" are not supported.
-" By Zhengping on 2019-01-14
+" Draft version for timePlot
+" Used for simple and random tasks
+" By Zhengping on 2019-01-17
 """
 
 import sys
@@ -125,9 +113,9 @@ class timePlot():
         plt.show()
 
     def doSave(self, index, target):
-        if not os.path.isdir("../../figure/comb/%s/" % target):
-            os.mkdir("../../figure/comb/%s/" % target)
-        plt.savefig("../../figure/comb/%s/%s_%s.pdf" % (target, target, str(index)), format='pdf')
+        if not os.path.isdir("../../figure/TLD/%s/" % target):
+            os.mkdir("../../figure/TLD/%s/" % target)
+        plt.savefig("../../figure/TLD/%s/%s_%s.pdf" % (target, target, str(index)), format='pdf')
         # plt.close(self.fig)
         plt.close()
 
@@ -139,25 +127,52 @@ if __name__ == '__main__':
 
     targetList += ["outakamai", "outcampus1", "outcampus2",
                   "outcpsc", "outothers", "outwebpax"]
-    # targetList = ["outcampus1"]
+    # targetList = ["inakamai"]
     for target in targetList:
-        index = 1
-        foldername = "../../exchange/total/"
-        filename = "%sTotalOutClusterCollFull_trans.log" % target
-        p = timePlot(foldername + filename, logRequ=True)
-        objList1 = list(p.rawdata.keys())
+        foldernametotal = "../../exchange/TLD/"
+        filenametotal = "%sTLDCollFull_trans.log" % target
 
-        for objname in objList1:
-            foldernametotal = "../../exchange/total/"
-            filenametotal = "%sTotalOutClusterCollFull_trans.log" % target
-            ptotal = timePlot(foldernametotal + filenametotal, logRequ=True)
-            ptotal.doDrawPlot([objname], "total", "black", "-")
+        foldernameResponse = "../../exchange/TLD/"
+        filenameResponse = "%sTLDResponseCollFull_trans.log" % target
+        pResponse = timePlot(foldernameResponse + filenameResponse, logRequ=True)
+        pTotal = timePlot(foldernametotal + filenametotal, logRequ=True)
+        index = 0
+        for TLDname in list(pTotal.rawdata.keys())[0:16]:
+            valueListTotal = list(pTotal.rawdata[TLDname])
 
-            # p.doShow()
+            logValueTotal = [math.log10(i+1) for i in valueListTotal]
+            xdata = list(range(1, 1+len(valueListTotal)))
+            plt.plot(xdata, logValueTotal, color="black", label="Total")
 
-            # p.doDrawPlot([objname], "weird", "r", "-")
-            # p.doDrawPlot()
-            p.setParams(title="%s" % (objname))
-            p.doSave(index, target)
+
+            try:
+                valueListResponse = list(pResponse.rawdata[TLDname])
+            except KeyError:
+                valueListResponse = [0] * len(valueListTotal)
+            logValueResponse = [math.log10(i+1) for i in valueListResponse]
+            plt.plot(xdata, logValueResponse, color="green", label="Response")
+
+            plt.xticks(list(range(1, 24*10+1, 24)), ["2018-09-%s" % str(day).zfill(2) for day in range(1, 11)],
+                       rotation=24)
+
+            ysrc = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000, ]
+            plt.yticks([math.log10(i) for i in ysrc],
+                       ["0"]+["$10^{%d}$" % exp for exp in range(1, 7)])
+            #
+            plt.ylim((0,math.log10(1_000_000)))
+            plt.title(TLDname)
+            plt.legend(loc="best")
+            plt.ylabel("Session Count")
             index += 1
+            # plt.savefig("../../figure/TLD/%s/%s_%s.pdf" % (target, "TLD", index), format='pdf')
+            # plt.close()
+            pTotal.doSave(index, target)
+            # plt.show()
             # p.doShow()
+            #
+            # p.doDrawPlot([objname], "weird", "r", "-")
+            # # p.doDrawPlot()
+            # p.setParams(title="%s" % (objname))
+            # p.doSave(index, target)
+            # index += 1
+            # # p.doShow()

@@ -8,7 +8,8 @@
 import json
 import sys
 sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
-from src.IO.JSDictToExchange import doMultipleTrans,doSingleTrans
+from src.IO.JSDictToExchange import doMultipleTrans, doSingleTrans
+from src.IO.easyMerger import doSingleMerger
 
 def singleController():
     moduleList = ["inakamai", "inaurora", "incampus", "incampusNew",
@@ -33,6 +34,21 @@ def multipleController():
     topK = None
     assigObject = None
     doMultipleTrans(filenameList, outputFilename, topK, assigObject)
+
+def easyMergerController():
+    moduleList = ["inakamai", "inaurora", "incampus", "incampusNew",
+                  "incpsc", "inothers", "inphys", "inunknown205"]
+    moduleList += ["outakamai", "outcampus1", "outcampus2",
+                  "outcpsc", "outothers", "outwebpax"]
+
+    taskList = ["%sTotalOutIPG" % module for module in moduleList]
+    for taskname in taskList:
+        filename = "%s.log" % taskname
+        outputFilename = "%s_trans.log" % taskname
+        topK = None
+        assigObject = None
+        doSingleTrans(filename, outputFilename, topK, assigObject)
+
 
 if __name__ == '__main__':
     singleController()

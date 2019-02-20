@@ -1,19 +1,9 @@
+
+
 """
-" The purpose of this class is to draw the time series plot according to the given input file
-" There are three major steps in order to do the visualization:
-" First, load the json file.
-" Second, decide the object and time period that will show in the figure
-" Third, set all the suitable parameters and show the graph
-" Loading is a easy task
-" For object and time period selection, according to the methods defined in <code>JSDictToExchange</code>,
-" time period is not defined so users need to define the time period by themselves. This (<code>timePlot</code>)
-" class will only obey the defined time period if it matches the length of input data. There is no mechanism to verify
-" if the time period is correct or not.
-" This class will only support the visualization of one single graph in one round of running, i.e. sub-graph is not
-" supported. However, multiple plots in one graph is supported by call <code>doDrawPlot</code> multiple times.
-" Also, only time series plot is supported, the other formats such as log scale (in x-axis) graph or even Pie charts
-" are not supported.
-" By Zhengping on 2019-01-14
+" Draft version for timePlot
+" Used for simple and random tasks
+" By Zhengping on 2019-01-17
 """
 
 import sys
@@ -21,6 +11,11 @@ import os
 import json
 import matplotlib.pyplot as plt
 import math
+import numpy as np
+from src.util.AutoCorr import getAutoCorr
+from src.util.CoeffVar import getCoeffVar
+from sklearn import datasets
+from sklearn.cluster import KMeans
 
 
 class timePlot():
@@ -125,9 +120,9 @@ class timePlot():
         plt.show()
 
     def doSave(self, index, target):
-        if not os.path.isdir("../../figure/comb/%s/" % target):
-            os.mkdir("../../figure/comb/%s/" % target)
-        plt.savefig("../../figure/comb/%s/%s_%s.pdf" % (target, target, str(index)), format='pdf')
+        if not os.path.isdir("../../figure/TLD/%s/" % target):
+            os.mkdir("../../figure/TLD/%s/" % target)
+        plt.savefig("../../figure/TLD/%s/%s_%s.pdf" % (target, target, str(index)), format='pdf')
         # plt.close(self.fig)
         plt.close()
 
@@ -139,25 +134,61 @@ if __name__ == '__main__':
 
     targetList += ["outakamai", "outcampus1", "outcampus2",
                   "outcpsc", "outothers", "outwebpax"]
-    # targetList = ["outcampus1"]
+    targetList = ["incampus"]
     for target in targetList:
-        index = 1
-        foldername = "../../exchange/total/"
-        filename = "%sTotalOutClusterCollFull_trans.log" % target
-        p = timePlot(foldername + filename, logRequ=True)
-        objList1 = list(p.rawdata.keys())
+        foldernametotal = "../../exchange/Total/"
+        filenametotal = "%sTotalOutClusterCollFull_trans.log" % target
+        pResponse = timePlot(foldernametotal + filenametotal, logRequ=True)
+        pTotal = timePlot(foldernametotal + filenametotal, logRequ=True)
+        index = 0
+        keyList = []
+        featureList = []
+        infoDict = {}
+        for TLDname in list(pTotal.rawdata.keys()):
+            valueListTotal = np.array(list(pTotal.rawdata[TLDname]))
+            # curFeatureList = []
 
-        for objname in objList1:
-            foldernametotal = "../../exchange/total/"
-            filenametotal = "%sTotalOutClusterCollFull_trans.log" % target
-            ptotal = timePlot(foldernametotal + filenametotal, logRequ=True)
-            ptotal.doDrawPlot([objname], "total", "black", "-")
+            # print(valueListTotal.mean())
+            # varUPD1 = np.array([math.log10(x + 1) for x in valueListTotal])
+            # varUPD2 = np.array([math.log10(x + 0.01) for x in valueListTotal])
+            # mean = varUPD1.mean()
+            # std = varUPD2.std()
+            mean = math.log10(valueListTotal.mean())
+            std = math.log10(valueListTotal.std()+1)
+            # mean = valueListTotal.mean()
+            # std = valueListTotal.std()
+            ac = getAutoCorr(valueListTotal, 12)
+            cov = getCoeffVar(valueListTotal)/20
+            actRate = len(valueListTotal.nonzero()[0])/len(valueListTotal) * 2
+            curFeatureList = [mean, std, ac,  cov, actRate]
+            infoDict[TLDname] = curFeatureList
+            keyList.append(TLDname)
+            featureList.append(curFeatureList)
 
-            # p.doShow()
+        # Loading dataset
 
-            # p.doDrawPlot([objname], "weird", "r", "-")
-            # p.doDrawPlot()
-            p.setParams(title="%s" % (objname))
-            p.doSave(index, target)
-            index += 1
-            # p.doShow()
+        # Declaring Model
+        for i in range(2, 16):
+            model = KMeans(n_clusters=i)
+            # Fitting Model
+            # print(featureList)
+            model.fit(featureList)
+
+            # Predicitng a single input
+            # predicted_label = model.predict([[7.2, 3.5, 0.8, 1.6], [1000, 1000, 1000, 1000]])
+
+            # Prediction on the entire data
+            all_predictions = model.predict(featureList)
+            predDict = {}
+            for pred, tld in zip(all_predictions, keyList):
+                predDict[tld] = int(pred)
+                # if pred == 1:
+                #     print(tld)
+            # print(predDict)
+            with open("../../prediction/outcpsc/prediction_logAfter/total_%d.json" % i, 'w') as f:
+                print(predDict)
+                json.dump(predDict, f)
+                print("Job Done for %d." % i)
+
+        with open("../../prediction/outcpsc/prediction_logAfter/total_feature.json", 'w') as f:
+            json.dump(infoDict, f)
