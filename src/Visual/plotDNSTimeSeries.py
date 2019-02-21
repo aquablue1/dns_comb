@@ -20,8 +20,11 @@ def getData(filename):
     # targetIPC = "218.248.112.x"
     targetIPC = "190.157.x.x"
     targetIPC = "198.134.2.x"
+    targetIPC = "208.69.32.x"
     with open(filename, 'r') as f:
         rawData = json.load(f)[targetIPC]
+    # print(rawData.keys())
+    # exit(0)
     # 1535781600 or 1535760000
     timeStart = 1535781600 + 3600*24*3
     timeEnd = 1535781600 + 3600*24*6
@@ -32,6 +35,7 @@ def getData(filename):
     query = "ns1.phys.ucalgary.ca"
     query = "ns2.phys.ucalgary.ca"
     query = "smtp.phys.ucalgary.ca"
+    # query = "megatron.phys.ucalgary.ca"
 
     # ns1
     replyList = []
@@ -55,7 +59,7 @@ def getData(filename):
             continue
         print(elem)
         plt.plot([float(elem[0]), float(elem[0])], [float(elem[1]), 0-float(elem[2])],
-                 color=replyClr, linewidth=2)
+                 color=replyClr, linewidth=2, label="NS1 Succeed")
         ttlLevel = getTTLV(ttlLevel)
         plt.plot([float(elem[0]), float(elem[0])+3600], [ttlLevel, ttlLevel])
 
@@ -65,7 +69,7 @@ def getData(filename):
             continue
         print(elem)
         plt.plot([float(elem[0]), float(elem[0])], [float(elem[1]), 0-float(elem[2])],
-                 color=emptyClr, linewidth=2)
+                 color=emptyClr, linewidth=2, label="NS1 Failed")
         # plt.plot([float(elem[0]), float(elem[0])+3600], [25, 25])
 
     print(len(replyList))
@@ -93,7 +97,7 @@ def getData(filename):
         print(elem)
         ttlLevel = getTTLV(ttlLevel)
         plt.plot([float(elem[0]), float(elem[0])], [float(elem[1]), 0-float(elem[2])],
-                 color=replyClr, linewidth=2, linestyle="--")
+                 color=replyClr, linewidth=2, linestyle="--", label="NS2 Succeed")
         plt.plot([float(elem[0]), float(elem[0])+3600], [ttlLevel, ttlLevel])
     emptyClr = (0.0, 0.6, 0.0, 0.2)
     for elem in emptyList:
@@ -101,7 +105,7 @@ def getData(filename):
             continue
         print(elem)
         plt.plot([float(elem[0]), float(elem[0])], [float(elem[1]), 0-float(elem[2])],
-                 color=emptyClr, linewidth=2, linestyle="--")
+                 color=emptyClr, linewidth=2, linestyle="--", label="NS2 Failed")
     print(len(replyList))
     print(len(emptyList))
 
@@ -128,7 +132,7 @@ def getData(filename):
         print(elem)
         ttlLevel = getTTLV(ttlLevel)
         plt.plot([float(elem[0]), float(elem[0])], [float(elem[1]), 0-float(elem[2])],
-                 color=replyClr, linewidth=2, linestyle="--")
+                 color=replyClr, linewidth=2, linestyle="-.", label="SMTP(NS3) Succeed")
         plt.plot([float(elem[0]), float(elem[0])+3600], [ttlLevel, ttlLevel])
 
     emptyClr = (0.0, 0.6, 0.0, 0.2)
@@ -137,7 +141,7 @@ def getData(filename):
             continue
         print(elem)
         plt.plot([float(elem[0]), float(elem[0])], [float(elem[1]), 0-float(elem[2])],
-                 color=emptyClr, linewidth=2, linestyle="-.")
+                 color=emptyClr, linewidth=2, linestyle="-.", label="SMTP(NS3) Failed")
     print(len(replyList))
     print(len(emptyList))
 
@@ -148,6 +152,18 @@ def getData(filename):
                ["2018-09-%s" % str(d).zfill(2) for d in range(4, 8)], rotation=15)
     # plt.xticks([1536573960, 1536573960+60, 1536573960+120],
     #            ["2018-09-10 10:06", "2018-09-10 10:07", "2018-09-10 10:08"], rotation=15)
+    plt.title("Queried NS: "+query)
+    # plt.ylim((-400, 400))
+
+    handles, labels = plt.gca().get_legend_handles_labels()
+    i = 1
+    while i < len(labels):
+        if labels[i] in labels[:i]:
+            del (labels[i])
+            del (handles[i])
+        else:
+            i += 1
+    plt.legend(handles, labels)
     plt.show()
 
 
@@ -158,7 +174,7 @@ if __name__ == '__main__':
 
     targetList += ["outakamai", "outcampus1", "outcampus2",
                   "outcpsc", "outothers", "outwebpax"]
-    targetList = ["inphys"]
+    targetList = ["incpsc"]
     for target in targetList:
         filename = "../../exchange/batchedTransWork/%sTransTop100TSpecial.log" % target
         getData(filename)
