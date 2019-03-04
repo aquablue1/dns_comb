@@ -22,8 +22,8 @@
 " By Zhengping on 2019-03-03, Updated on 2019-03-04
 """
 
-# import sys
-# sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
+import sys
+sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
 import os
 import json
 import datetime
@@ -67,8 +67,9 @@ class ResponseLoader:
         output_name = "../../ResponseAnalysis/ValidInvalidStatistics/%s_%s_%sTo%s.log" % (module_name, target,
                                                                                           self.date_range["start"],
                                                                                           self.date_range["end"])
+        print(os.path.dirname(output_name))
         if not os.path.exists(os.path.dirname(output_name)):
-            os.mkdir(os.path.dirname(output_name))
+            os.makedirs(os.path.dirname(output_name))
         return output_name
 
     # @staticmethod
@@ -92,9 +93,10 @@ class ResponseLoader:
         for uid in hourly_src:
             dns_list = hourly_src[uid]["dns"]
             conn_list = hourly_src[uid]["conn"]
-
+            if not dns_list:
+                continue
             for dns_record in dns_list:
-                qname = dns_record[2]
+                qname = dns_record[2]+"/"+dns_record[5]
                 # Check for response field in DNS log, "-" means invalid, otherwise valid
                 if dns_record[3] == "-":
                     invalid_count[qname] += 1
@@ -140,12 +142,12 @@ class ResponseLoader:
             for daily_folder_name in daily_folder_name_list:
                 daily_statistics_dict = ResponseLoader.daily_collector(daily_folder_name)
                 for key in module_statistics:
-                    module_statistics[key] += daily_statistics_dict
+                    module_statistics[key] += daily_statistics_dict[key]
 
             module_output_filename = self._get_output_for_module("isError", module_name)
             # Write to ISError files.
             with open(module_output_filename, 'w') as f:
-                for key in module_statistics["no_error"]:
+                for key in set(module_statistics["no_error"]+module_statistics["error"]):
                     qname_info = "%s\t%d\t%d\n" % (key,
                                                    module_statistics["no_error"][key],
                                                    module_statistics["error"][key])
@@ -153,7 +155,7 @@ class ResponseLoader:
             # write to ISValid files.
             module_output_filename = self._get_output_for_module("isValid", module_name)
             with open(module_output_filename, 'w') as f:
-                for key in module_statistics["valid"]:
+                for key in set(module_statistics["valid"]+module_statistics["invalid"]):
                     qname_info = "%s\t%d\t%d\n" % (key,
                                                    module_statistics["valid"][key],
                                                    module_statistics["invalid"][key])
@@ -161,7 +163,7 @@ class ResponseLoader:
             # Write to ISReply files
             module_output_filename = self._get_output_for_module("isReply", module_name)
             with open(module_output_filename, 'w') as f:
-                for key in module_statistics["reply"]:
+                for key in set(module_statistics["reply"]+module_statistics["no_reply"]):
                     qname_info = "%s\t%d\t%d\n" % (key,
                                                    module_statistics["reply"][key],
                                                    module_statistics["no_reply"][key])
