@@ -1,12 +1,16 @@
 """
-" This script aims to get the statistics of valid and invalid DNS message in each DNS Module.
+" This script aims to get the statistics of Error/NoError, valid/invalid, Reply/NoReply DNS message in each DNS Module.
+" *NoError* means the DNS reply contains the NOERROR for session status,
+" *Error* means the DNS reply has some errors, e.g. MXDOMAIN.
 " *VALID* means the DNS response is visible in Bro log.
 " *INVALID* means the response and TTL fields are both a dash ("-"), which means no response is witnessed
 " or Bro cannot understand it.
+" *Reply* means the response size is non-zero, at least there is some responded content in IP layer.
+" *NoReply* means even in IP layer, there is no data size info witnessed.
 " This script accept the data from structNew as input,
 " analysis the response status in each Module.
 " For each Module, it outputs three report files namely:
-" valid-response.json, invalid-response.json and mix-response.json
+" Modulename_isError_TimeRange.log, Modulename_isValid_TimeRange.log and Modulename_isReply_TimeRange.log
 " valid and invalid -response corresponds to the valid and invalid we have mentioned above.
 " the mix-response indicates for one certain queried name, both response and non-response is witnessed.
 " For valid and invalid -response files, it records
@@ -15,7 +19,7 @@
                             non-request (from conn), non-response (from conn))
 " 3. issued inner DNS Server.
 " For mix-response files, it records both missed occurrence and caught occurrence.
-" By Zhengping on 2019-03-03
+" By Zhengping on 2019-03-03, Updated on 2019-03-04
 """
 
 # import sys
@@ -58,6 +62,14 @@ class ResponseLoader:
                 target_daily_folders.append(daily_folder)
 
         return target_daily_folders
+
+    def _get_output_for_module(self, target, module_name):
+        output_name = "../../ResponseAnalysis/ValidInvalidStatistics/%s_%s_%sTo%s.log" % (module_name, target,
+                                                                                          self.date_range["start"],
+                                                                                          self.date_range["end"])
+        if not os.path.exists(os.path.dirname(output_name)):
+            os.mkdir(os.path.dirname(output_name))
+        return output_name
 
     # @staticmethod
     # def _get_files_for_module(daily_folder_name):
@@ -118,23 +130,56 @@ class ResponseLoader:
 
         return daily_statistics
 
-    def executor(self):
-        for module_name in self.module_list:
+    def executor(self, specify_module=None):
+        if specify_module:
+            module_name = specify_module
             module_statistics = {"no_error": Counter(), "error": Counter(),
                                  "valid": Counter(), "invalid": Counter(),
                                  "reply": Counter(), "no_reply": Counter()}
             daily_folder_name_list = self._get_folders_for_module(module_name)
             for daily_folder_name in daily_folder_name_list:
                 daily_statistics_dict = ResponseLoader.daily_collector(daily_folder_name)
+                for key in module_statistics:
+                    module_statistics[key] += daily_statistics_dict
+
+            module_output_filename = self._get_output_for_module("isError", module_name)
+            # Write to ISError files.
+            with open(module_output_filename, 'w') as f:
+                for key in module_statistics["no_error"]:
+                    qname_info = "%s\t%d\t%d\n" % (key,
+                                                   module_statistics["no_error"][key],
+                                                   module_statistics["error"][key])
+                    f.write(qname_info)
+            # write to ISValid files.
+            module_output_filename = self._get_output_for_module("isValid", module_name)
+            with open(module_output_filename, 'w') as f:
+                for key in module_statistics["valid"]:
+                    qname_info = "%s\t%d\t%d\n" % (key,
+                                                   module_statistics["valid"][key],
+                                                   module_statistics["invalid"][key])
+                    f.write(qname_info)
+            # Write to ISReply files
+            module_output_filename = self._get_output_for_module("isReply", module_name)
+            with open(module_output_filename, 'w') as f:
+                for key in module_statistics["reply"]:
+                    qname_info = "%s\t%d\t%d\n" % (key,
+                                                   module_statistics["reply"][key],
+                                                   module_statistics["no_reply"][key])
+                    f.write(qname_info)
+        else:
+            for module_name in self.module_list:
+                self.executor(module_name)
 
 
 if __name__ == '__main__':
-    module_list = ["inakamai", "inaurora", "incampus", "incampusNew",
+    module_list_t = ["inakamai", "inaurora", "incampus", "incampusNew",
                    "incpsc", "inothers", "inphys", "inunknown205"]
-    module_list += ["outakamai", "outcampus1", "outcampus2",
+    module_list_t += ["outakamai", "outcampus1", "outcampus2",
                     "outcpsc", "outothers", "outwebpax"]
 
-    module_list = ["inaurora"]
+    module_list_t = ["inaurora"]
 
-    date_range = ["2018-09-01", "2018-09-03"]
-    rl = ResponseLoader(module_list, date_range)
+    date_range_t = ["2018-09-01", "2018-09-03"]
+    rl = ResponseLoader(module_list_t, date_range_t)
+    for module_name_t in module_list_t:
+        rl.executor(module_name_t)
