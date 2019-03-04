@@ -10,7 +10,9 @@
 " This script accept the data from structNew as input,
 " analysis the response status in each Module.
 " For each Module, it outputs three report files namely:
-" Modulename_isError_TimeRange.log, Modulename_isValid_TimeRange.log and Modulename_isReply_TimeRange.log
+" ModuleName_isError_TimeRange.log,
+" ModuleName_isValid_TimeRange.log and,
+" ModuleName_isReply_TimeRange.log.
 " valid and invalid -response corresponds to the valid and invalid we have mentioned above.
 " the mix-response indicates for one certain queried name, both response and non-response is witnessed.
 " For valid and invalid -response files, it records
@@ -23,18 +25,18 @@
 """
 
 import sys
-sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
 import os
 import json
 import datetime
 from collections import Counter
+sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
 from src.util.FolderReader import folderReader
 
 
 class ResponseLoader:
     def __init__(self, module_list=None, date_range=None):
         self.module_list = module_list
-        if not date_range:
+        if date_range:
             self.date_range = {"start": date_range[0], "end": date_range[1]}
         else:
             self.date_range = {"start": "2015-01-01", "end": "2019-12-31"}
@@ -53,7 +55,7 @@ class ResponseLoader:
 
         module_folder = folderReader(module_folder_name)
         for daily_folder in module_folder:
-            print(daily_folder)
+            # (daily_folder)
             date_string = daily_folder.split("/")[-1]
             date_current = datetime.datetime(int(date_string.split("-")[0]),
                                              int(date_string.split("-")[1]),
@@ -135,6 +137,7 @@ class ResponseLoader:
     def executor(self, specify_module=None):
         if specify_module:
             module_name = specify_module
+            print("Start Module: %s. At: %s" % (module_name, datetime.datetime.now()))
             module_statistics = {"no_error": Counter(), "error": Counter(),
                                  "valid": Counter(), "invalid": Counter(),
                                  "reply": Counter(), "no_reply": Counter()}
@@ -168,6 +171,7 @@ class ResponseLoader:
                                                    module_statistics["reply"][key],
                                                    module_statistics["no_reply"][key])
                     f.write(qname_info)
+            print("Finish Module: %s. At: %s" % (module_name, datetime.datetime.now()))
         else:
             for module_name in self.module_list:
                 self.executor(module_name)
@@ -175,13 +179,15 @@ class ResponseLoader:
 
 if __name__ == '__main__':
     module_list_t = ["inakamai", "inaurora", "incampus", "incampusNew",
-                   "incpsc", "inothers", "inphys", "inunknown205"]
+                     "incpsc", "inothers", "inphys", "inunknown205"]
     module_list_t += ["outakamai", "outcampus1", "outcampus2",
-                    "outcpsc", "outothers", "outwebpax"]
+                      "outcpsc", "outothers", "outwebpax"]
 
-    module_list_t = ["inaurora"]
+    # module_list_t = ["inaurora"]
 
-    date_range_t = ["2018-09-01", "2018-09-03"]
+    date_range_t = ["2018-09-01", "2018-09-11"]
     rl = ResponseLoader(module_list_t, date_range_t)
+    print("======== Start Execution =========")
     for module_name_t in module_list_t:
         rl.executor(module_name_t)
+    print("======== All Job Done =========")
