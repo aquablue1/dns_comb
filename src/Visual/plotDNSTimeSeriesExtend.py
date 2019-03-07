@@ -22,6 +22,8 @@ class PlotDNSTimeSeries:
         self.time_range = PlotDNSTimeSeries._time_to_string((time_start, time_end))
         self.ax = plt.figure().add_subplot(111)
         self.data_by_ns = None
+        self.total_invisible = 0
+        self.total_visible = 0
 
     @staticmethod
     def _get_color_for_dns(ns_type):
@@ -59,7 +61,7 @@ class PlotDNSTimeSeries:
                       "SOA": (0.4, 0.4, 0, trans_level),
                       "NB": (0.6, 0, 0.6, trans_level),
                       # "MX": (0, 0, 0, trans_level),
-                      "-": (1, 1, 1, trans_level)
+                      "-": (0, 0, 0, trans_level)
                       }
         try:
             return color_dict[ns_type]
@@ -138,7 +140,8 @@ class PlotDNSTimeSeries:
             print("Get the top %d popular queries from current IP Cluster:" % (top_k))
             for key in self.data_by_ns:
                 for raw in self.data_by_ns[key]:
-                    unique_query_fingerprint = raw[1]+ "_" + raw[2] + "_" + raw[5]
+                    # print(raw)
+                    unique_query_fingerprint = raw[1] + "_" + raw[2] + "_" + raw[5]
                     pop_query_counter[unique_query_fingerprint] += 1
             for key in pop_query_counter.most_common(top_k):
                 print(key)
@@ -165,14 +168,13 @@ class PlotDNSTimeSeries:
         data_by_ns = {}
         for raw in raw_data:
             ts = int(float(raw[0]))
-            if self.time_range["start"] <= ts <= self.time_range["end"] \
-                    and raw[5] == self.qname:
+            if self.time_range["start"] <= ts <= self.time_range["end"]:
                 outIP_exact = raw[1]
                 try:
                     data_by_ns[outIP_exact].append(raw)
                 except KeyError:
                     data_by_ns[outIP_exact] = [raw]
-        print(data_by_ns)
+        # print(data_by_ns)
         # return data_by_ns
         self.data_by_ns = data_by_ns
 
@@ -188,7 +190,7 @@ class PlotDNSTimeSeries:
             index += 1
         return ns_dict
 
-    def draw_valid_period(self, data_list):
+    def draw_valid_period(self, data_list, is_qname=True):
         # color_active = (0.0, 0.6, 0.0, 0.2)
         """
         Draw the visible part in dns query, the range is painted as cubic,
@@ -199,6 +201,8 @@ class PlotDNSTimeSeries:
         ns_dict = self.gen_ns_pool()
         for entry in data_list:
             if entry[6] != "-":
+                if is_qname and entry[5] != self.qname:
+                    continue
                 start_point = (int(float(entry[0])), 0-int(entry[4]))
                 width = int(float(entry[7].split(",")[0]))
                 height = int(entry[3]) + int(entry[4])
@@ -218,11 +222,14 @@ class PlotDNSTimeSeries:
                     ns_dot_color = "black"
                 self.ax.scatter([int(float(entry[0]))], [y_axis],
                                 color=ns_dot_color, marker=".", s=20)
+                self.total_visible += 1
 
-    def draw_visible_query(self, data_list, line_style="-"):
+    def draw_visible_query(self, data_list, line_style="-", is_qname=True):
         # color_visible_query = (0.0, 0.0, 0.8, 0.5)
         for entry in data_list:
             if entry[6] != "-":
+                if is_qname and entry[5] != self.qname:
+                    continue
                 start_point = [int(float(entry[0])), int(entry[3])]
                 end_point = [int(float(entry[0])), 0-int(entry[4])]
                 color_visible_query = PlotDNSTimeSeries._get_color_for_dns(entry[8])
@@ -230,7 +237,7 @@ class PlotDNSTimeSeries:
                              color=color_visible_query, linestyle=line_style,
                              label="Visible/%s"%(entry[8]))
 
-    def draw_invisible_query(self, data_list, line_style="-"):
+    def draw_invisible_query(self, data_list, line_style="-", is_qname=True):
         """
         Draw the invisible part in the dns_record list.
         :param data_list:
@@ -241,6 +248,8 @@ class PlotDNSTimeSeries:
         ns_dict = self.gen_ns_pool()
         for entry in data_list:
             if entry[6] == "-":
+                if is_qname and entry[5] != self.qname:
+                    continue
                 start_point = [int(float(entry[0])), int(entry[3])]
                 end_point = [int(float(entry[0])), 0-int(entry[4])]
                 color_visible_query = PlotDNSTimeSeries._get_color_for_dns(entry[8])
@@ -250,32 +259,36 @@ class PlotDNSTimeSeries:
                 self.ax.plot([start_point[0], end_point[0]], [start_point[1], end_point[1]],
                              color=color_visible_query, linestyle=line_style,
                              label="Invisible/%s"%(entry[8]))
-            ns_name = ns_dict[entry[2]]
-            if ns_name == "ns1":
-                y_axis = 50
-                ns_dot_color = "blue"
-            elif ns_name == "ns2":
-                y_axis = -50
-                ns_dot_color = "red"
-            else:
-                y_axis = 0
-                ns_dot_color = "black"
-            self.ax.scatter([int(float(entry[0]))], [y_axis],
-                            color=ns_dot_color, marker=".", s=20)
+                ns_name = ns_dict[entry[2]]
+                if ns_name == "ns1":
+                    y_axis = 50
+                    ns_dot_color = "blue"
+                elif ns_name == "ns2":
+                    y_axis = -50
+                    ns_dot_color = "red"
+                else:
+                    y_axis = 0
+                    ns_dot_color = "black"
+                self.ax.scatter([int(float(entry[0]))], [y_axis],
+                                color=ns_dot_color, marker=".", s=20)
+                self.total_invisible += 1
 
-    def draw_essential(self, target_ns):
+    def draw_essential(self, target_ns, is_visible=True, is_non_visible=True):
         try:
             data_by_ns = self.data_by_ns[target_ns]
-            self.draw_valid_period(data_by_ns)
-            self.draw_invisible_query(data_by_ns)
+            if is_visible:
+                self.draw_valid_period(data_by_ns)
+            if is_non_visible:
+                self.draw_invisible_query(data_by_ns)
         except KeyError:
             print("The assigned key %s is not found in current data_dict" % (target_ns))
 
-    def draw_systematic(self, target_ns_list=None):
+    def draw_systematic(self, target_ns_list=None, is_visible=True, is_non_visible=True):
         if not self.data_by_ns:
             self.load_data_by_ns()
         for target_ns in target_ns_list:
-            self.draw_essential(target_ns)
+            self.draw_essential(target_ns, is_visible, is_non_visible)
+        self.target_ns_list = target_ns_list
         self.decoration()
         plt.show()
 
@@ -285,9 +298,10 @@ class PlotDNSTimeSeries:
                      color="black",
                      linestyle="--")
         self.ax.set_xlim(self.time_range["start"], self.time_range["end"])
-        max_y_lim = max([int(raw[3]) for raw in self.load_raw_data()] +
-                        [int(raw[4]) for raw in self.load_raw_data()])
-        self.ax.set_ylim(max_y_lim-10, max_y_lim+10)
+        # max_y_lim = max([int(raw[3]) for raw in self.load_raw_data()] +
+        #                 [int(raw[4]) for raw in self.load_raw_data()])
+        max_y_lim = 200
+        self.ax.set_ylim(0-max_y_lim-10, max_y_lim+10)
         self.ax.set_xticks(list(range(self.time_range["start"],
                                       self.time_range["end"]+3600*24, 3600*24)))
         self.ax.set_xticklabels(["2018-09-%s" % str(d).zfill(2) for d in range(4, 8)], rotation=15)
@@ -308,6 +322,18 @@ class PlotDNSTimeSeries:
         plt.legend(handles, labels, loc="best")
         # self.ax.legend(loc="best")
 
+        self.ax.text(self.time_range["start"]+3000, -160,
+                     "Inquirer: %s" % self.target_ns_list,
+                     fontsize=10)
+        self.ax.text(self.time_range["start"] + 3000, -170,
+                     "Queried NS: %s" % self.qname,
+                     fontsize=10)
+        self.ax.text(self.time_range["start"]+3000, -180,
+                     "Total Visible: %d" % self.total_visible,
+                     fontsize=10)
+        self.ax.text(self.time_range["start"] + 3000, -190,
+                     "Total Invisible: %d" % self.total_invisible,
+                     fontsize=10)
 
 
 
@@ -320,8 +346,8 @@ if __name__ == '__main__':
     module_name = "incpsc"
     inIP = "136.159.2.4"
     # outIP = "208.69.32.x"
-    outIP = "62.x.x.x"
-    qname = "ns2.cpsc.ucalgary.ca"
+    outIP = "15.x.x.x"
+    qname = "pages.cpsc.ucalgary.ca"
 
     time_start = "2018-09-04"
     time_end = "2018-09-07"
@@ -329,8 +355,8 @@ if __name__ == '__main__':
     # tester.draw_valid_period(tester.load_data_by_ns()["136.159.142.4"])
     # # tester.draw_visible_query(tester.load_data_by_ns()["136.159.142.4"])
     # tester.draw_invisible_query(tester.load_data_by_ns()["136.159.142.4"])
-    tester.draw_systematic(["62.210.18.16"])
+    tester.draw_systematic(["15.211.192.159"], is_visible=True)
     # tester.decoration()
     # plt.show()
-    # tester.show_raw_helper(src_opt=False, pop_query=True, target_src="62.210.18.16")
-    # tester.show_helper(src_opt=False, dst_opt=False, qname_opt=False, pop_query=True)
+    # tester.show_raw_helper(src_opt=True, pop_query=False, target_src="62.210.18.16")
+    tester.show_helper(src_opt=False, dst_opt=False, qname_opt=False, pop_query=True)
