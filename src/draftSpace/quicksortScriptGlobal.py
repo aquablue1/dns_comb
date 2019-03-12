@@ -29,12 +29,15 @@ def daily_analysis(date):
         hour_key = str(i).zfill(2)
         daily_result[hour_key] = None
     daily_result["total"] = {"summary": [0, 0, 0, 0, 0, 0], "proto/port": Counter()}
+    total_weird_count = 0
     for filename in folder:
         if "conn." not in filename:
             continue
+        weird_count = 0
         total_in, total_out = 0, 0
         total_in_byte_trans, total_out_byte_trans = 0, 0
         total_in_byte_ip, total_out_byte_ip = 0, 0
+        tcp_count, udp_count, icmp_count, non_trans_count = 0, 0, 0, 0
         proto_port_counter = Counter()
         with gzip.open(filename, 'rt') as f:
             for line in f:
@@ -46,6 +49,7 @@ def daily_analysis(date):
                 dst_ip = line_list[4]
                 direct = "none"
                 proto_port_key = line_list[6] + "/" + line_list[5]
+                proto = line_list[6]
                 if line_list[9] == "-":
                     src_bytes_trans = 0
                 else:
@@ -56,6 +60,18 @@ def daily_analysis(date):
                     dst_bytes_trans = int(line_list[10])
                 src_bytes_ip = int(line_list[17])
                 dst_bytes_ip = int(line_list[19])
+                if src_bytes_ip*5 < src_bytes_trans:
+                    weird_count += 1
+                    # print("Abnormal: %d for IP but %d for Trans" % (src_bytes_ip, src_bytes_trans))
+                    continue
+                if proto == "tcp":
+                    tcp_count += 1
+                elif proto == "udp":
+                    udp_count += 1
+                elif proto == "icmp":
+                    icmp_count += 1
+                else:
+                    non_trans_count += 1
 
                 if src_ip.startswith("136.159."):
                     total_out += 1
@@ -73,6 +89,8 @@ def daily_analysis(date):
                     proto_port_counter[proto_port_key] += 1
         hour_target = filename.split("/")[-1][5:7]
         print("File Name: %s\nHour Target: %s" % (filename, hour_target))
+        print("Weird Count is %d" % weird_count)
+        total_weird_count += weird_count
         proto_port_counter_top = Counter(dict(proto_port_counter.most_common(100)))
         if daily_result[hour_target] is None:
             daily_result[hour_target] = {"summary": [total_in, total_out,
@@ -100,9 +118,10 @@ def daily_analysis(date):
                                                 daily_result[hour_key]["summary"])]
         daily_result["total"]["proto/port"] += daily_result[hour_key]["proto/port"]
     print("==>--------------Daily Summary------------------<==")
-    print("Output Daily Summary for %s" % (date))
+    print("Output Daily Summary for %s" % date)
     print("Statistics Summary: %s" % daily_result["total"]["summary"])
     print("Proto/Port Popularity: %s" % daily_result["total"]["proto/port"])
+    print("Total Weird Count: %s" % total_weird_count)
     print("===================================================")
     return daily_result
 
