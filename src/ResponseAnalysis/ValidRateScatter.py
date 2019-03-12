@@ -12,11 +12,11 @@
 """
 
 import os
-import sys
 import math
 import matplotlib.pyplot as plt
 from collections import Counter
-sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
+# import sys
+# sys.path.append('/home/zhengping/DNS/DNSPythonWorkspace')
 from src.util.FileReader import fileReader
 
 
@@ -66,7 +66,10 @@ class ValidRateScatter:
         index = 1
         x_data = []
         y_data = []
-        for query_tuple in query_counter.most_common():
+        always_reply = 0
+        sometimes_reply = 0
+        never_reply = 0
+        for query_tuple in query_counter.most_common(100):
             total = int(query_tuple[1])
             if total < self.qualify_num:
                 continue
@@ -87,8 +90,25 @@ class ValidRateScatter:
                 print("Total count is zero for query %s. Please Check" % query)
                 raise ZeroDivisionError
             #
-            # if 0.3 < valid/total < 0.8:
-            #     print("%s - %s" % (query, query_dict[query]))
+            upper_bound = 0
+            lower_bound = 0
+            if self.module_name.startswith("in"):
+                upper_bound = 0.98
+                lower_bound = 1 - upper_bound
+            elif self.module_name.startswith("out"):
+                upper_bound = 0.9
+                lower_bound = 1 - upper_bound
+            if valid/total > upper_bound:
+                always_reply += 1
+            elif lower_bound <= valid/total <= upper_bound:
+                sometimes_reply += 1
+            else:
+                never_reply += 1
+        print("======> Start Count %s <=====" % self.module_name)
+        print("Count of Always Reply is: %d" % always_reply)
+        print("Count of Sometimes Reply is: %d" % sometimes_reply)
+        print("Count of Never Reply is: %d" % never_reply)
+        print("==============> END <===============")
         if self.style == "Rank":
             self.paint_length = index
         elif self.style == "Count":
@@ -138,12 +158,12 @@ class ValidRateScatter:
                 i += 1
         plt.legend(handles, labels, loc="best")
 
-        plt.show()
-        # plt.savefig("../../ResponseAnalysis/Fig%s_ValidInvalidStatistics/%s_%s_%sTo%s.pdf"
-        #             % (self.style, self.module_name, self.target,
-        #                self.date_range["start"], self.date_range["end"]),
-        #             format='pdf')
-        # plt.close()
+        # plt.show()
+        plt.savefig("../../ResponseAnalysis/Jpg%s_ValidInvalidStatistics_top100/%s_%s_%sTo%s.jpg"
+                    % (self.style, self.module_name, self.target,
+                       self.date_range["start"], self.date_range["end"]),
+                    format='jpg')
+        plt.close()
 
 
 if __name__ == '__main__':
@@ -154,8 +174,8 @@ if __name__ == '__main__':
                     "outcpsc", "outothers", "outwebpax"]
 
     for module_name_t in module_list:
-        target_t = "isError"
+        target_t = "isReply"
         date_range_t = ["2018-09-01", "2018-09-11"]
-        VRScatter = ValidRateScatter(module_name_t, target_t, date_range_t, style="Count")
+        VRScatter = ValidRateScatter(module_name_t, target_t, date_range_t, style="Rank")
         VRScatter.paint()
 

@@ -8,17 +8,17 @@ from src.integUtil.batchedWorker import batchedWorker
 
 
 def collectorController():
-    targetList = ["inakamai", "inaurora", "incampus", "incampusNew",
-                  "incpsc", "inothers", "inphys", "inunknown205"]
+    target_list = ["inakamai", "inaurora", "incampus", "incampusNew",
+                   "incpsc", "inothers", "inphys", "inunknown205"]
 
-    targetList += ["outakamai", "outcampus1", "outcampus2",
-                  "outcpsc", "outothers", "outwebpax"]
+    target_list += ["outakamai", "outcampus1", "outcampus2",
+                   "outcpsc", "outothers", "outwebpax"]
 
-    for target in targetList:
-        taskname = "worker2D1WeirdIn"
-        outputname = "%sWeirdInCollTen" % (target)
+    for target in target_list:
+        taskname = "worker1Direction"
+        outputname = "%sDirectionCollectorTen" % (target)
 
-        bworker = batchedWorker([targetList], taskname, outputname)
+        bworker = batchedWorker([target_list], taskname, outputname)
         foldlist = bworker.getTargetFolderList("2018-09-01", "2018-09-11")
         # print(bworker.getTargetFileList(foldlist[0]))
         for fold in foldlist:
@@ -94,7 +94,7 @@ def transController():
 
 
 if __name__ == '__main__':
+    collectorController()
     # counterColtroller()
-    # collectorController()
-    transController()
+    # transController()
     print("Job Done! EXIT()")

@@ -64,9 +64,10 @@ class TimeSeriesPlot:
             abs_filename = filename.split("/")[-1]
             if abs_filename.startswith(self.module_name):
                 for line in fileReader(filename):
-                    line_list = line.split("\t")
+                    line_list = line.strip().split("\t")
                     # Most of the modifications happen here.
-                    data_dict[line_list[0]] += int(line_list[1])
+
+                    data_dict[line_list[0]] += (int(line_list[2]) + int(line_list[4]))
         return data_dict
 
     def paint(self):
@@ -122,16 +123,17 @@ class TimeSeriesPlot:
             except KeyError:
                 print("Specified data key %s is not found from data dict" % data_key)
                 print("Error data range or Error input src file")
-        y_data = np.array(y_data)
-        print("Total witnessed amount is %d" % y_data.sum())
-        print("Max witnessed value is %d" % y_data.max())
-        print("Min witnessed value is %d" % y_data.min())
-        print("Mean value is %d" % y_data.mean())
-        print("Standard Deviation is %d" % y_data.std())
+        y_data_np = np.array(y_data)
+        print("Total witnessed amount is %d" % sum(y_data))
+        print("Max witnessed value is %d" % y_data_np.max())
+        print("Min witnessed value is %d" % y_data_np.min())
+        print("Mean value is %f" % y_data_np.mean())
+        print("Population Standard Deviation is %d" % y_data_np.std())
 
 
 if __name__ == '__main__':
-    src_folder_t = "../../exchange/totalCount/"
+    # src_folder_t = "../../exchange/totalCount"
+    src_folder_t = "../../exchange/OverallVolumeCollector/"
     date_range_t = ["2018-09-01", "2018-09-11"]
     module_name_t = ""
     tsp = TimeSeriesPlot(src_folder_t, module_name_t, date_range_t)
