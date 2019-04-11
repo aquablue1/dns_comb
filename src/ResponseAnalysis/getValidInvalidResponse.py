@@ -182,10 +182,10 @@ if __name__ == '__main__':
                      "incpsc", "inothers", "inphys", "inunknown205"]
     module_list_t += ["outakamai", "outcampus1", "outcampus2",
                       "outcpsc", "outothers", "outwebpax"]
-
+    module_name_t = ["incpsc", "incampus", "inakamai", "outakamai", "outcampus1", "outcpsc"]
     # module_list_t = ["inaurora"]
 
-    date_range_t = ["2018-09-01", "2018-09-11"]
+    date_range_t = ["2018-09-03", "2018-09-10"]
     rl = ResponseLoader(module_list_t, date_range_t)
     print("======== Start Execution =========")
     for module_name_t in module_list_t:

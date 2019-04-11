@@ -95,13 +95,17 @@ def daily_analysis(date):
         if daily_result[hour_target] is None:
             daily_result[hour_target] = {"summary": [total_in, total_out,
                                                      total_in_byte_trans, total_in_byte_ip,
-                                                     total_out_byte_trans, total_out_byte_ip],
+                                                     total_out_byte_trans, total_out_byte_ip,
+                                                     tcp_count, udp_count,
+                                                     icmp_count, non_trans_count],
                                          "proto/port": proto_port_counter_top}
         else:
             summ_org = daily_result[hour_target]["summary"]
             summ_new = [total_in, total_out,
                         total_in_byte_trans, total_in_byte_ip,
-                        total_out_byte_trans, total_out_byte_ip]
+                        total_out_byte_trans, total_out_byte_ip,
+                        tcp_count, udp_count,
+                        icmp_count, non_trans_count]
             summ_update = [value_org + value_new for value_org, value_new in zip(summ_org, summ_new)]
             proto_port_new = daily_result[hour_target]["proto/port"] + proto_port_counter_top
             daily_result[hour_target] = {"summary": summ_update,

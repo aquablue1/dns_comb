@@ -2,6 +2,7 @@
 " Read Conn, DNS and weird files
 " Dump them into one integrated json file.
 " By Zhengping on 2018-11-26
+" Updated on 2019-03-25
 """
 
 import sys
@@ -49,7 +50,7 @@ def batchedDump(direction, date):
     CampusList = ["136.159.1.21", "136.159.34.201"]
     CampusNewList = ["136.159.222.2", "136.159.222.10"]
     CPSCList = ["136.159.2.1", "136.159.2.4"]
-    PhysList = ["136.159.51.4", "136.159.51.5", "136.159.52.10"]
+    PhysList = ["136.159.51.4", "136.159.51.5", "136.159.52.6", "136.159.52.10", "136.159.52.164"]
     AuroraList = ["136.159.142.4", "136.159.142.5"]
 
     # UNS Lists
@@ -116,7 +117,9 @@ def batchedDump(direction, date):
             dnsList = [line_list[dnsFTL["transID"]], line_list[dnsFTL["rtt"]],
                        line_list[dnsFTL["query"]], line_list[dnsFTL["answers"]],
                        line_list[dnsFTL["ttls"]], line_list[dnsFTL["type"]],
-                       line_list[dnsFTL["error"]]]
+                       line_list[dnsFTL["error"]], line_list[dnsFTL["AA"]],
+                       line_list[dnsFTL["TC"]], line_list[dnsFTL["RD"]],
+                       line_list[dnsFTL["RA"]], line_list[dnsFTL["rejected"]]]
             try:
                 if not targetDict[uid]["dns"]:
                     targetDict[uid]["dns"] = []
@@ -153,49 +156,49 @@ def batchedDump(direction, date):
 
         # output all the dicts as json file.
         outputilename = "%s_%s.log" % (date, hour)
-        akamaiOutputFolder = "../../structNew/inakamai/%s/" % (date)
+        akamaiOutputFolder = "../../structNewNew/inakamai/%s/" % (date)
         if not os.path.exists(akamaiOutputFolder):
             os.makedirs(akamaiOutputFolder)
         with open(akamaiOutputFolder+outputilename, 'a') as f:
             json.dump(akamaiDict, f)
 
-        campusOutputFolder = "../../structNew/incampus/%s/" % (date)
+        campusOutputFolder = "../../structNewNew/incampus/%s/" % (date)
         if not os.path.exists(campusOutputFolder):
             os.makedirs(campusOutputFolder)
         with open(campusOutputFolder+outputilename, 'a') as f:
             json.dump(campusDict, f)
 
-        campusNewOutputFolder = "../../structNew/incampusNew/%s/" % (date)
+        campusNewOutputFolder = "../../structNewNew/incampusNew/%s/" % (date)
         if not os.path.exists(campusNewOutputFolder):
             os.makedirs(campusNewOutputFolder)
         with open(campusNewOutputFolder+outputilename, 'a') as f:
             json.dump(campusNewDict, f)
 
-        cpscOutputFolder = "../../structNew/incpsc/%s/" % (date)
+        cpscOutputFolder = "../../structNewNew/incpsc/%s/" % (date)
         if not os.path.exists(cpscOutputFolder):
             os.makedirs(cpscOutputFolder)
         with open(cpscOutputFolder+outputilename, 'a') as f:
             json.dump(cpscDict, f)
 
-        physOutputFolder = "../../structNew/inphys/%s/" % (date)
+        physOutputFolder = "../../structNewNew/inphys/%s/" % (date)
         if not os.path.exists(physOutputFolder):
             os.makedirs(physOutputFolder)
         with open(physOutputFolder+outputilename, 'a') as f:
             json.dump(physDict, f)
 
-        auroraOutputFolder = "../../structNew/inaurora/%s/" % (date)
+        auroraOutputFolder = "../../structNewNew/inaurora/%s/" % (date)
         if not os.path.exists(auroraOutputFolder):
             os.makedirs(auroraOutputFolder)
         with open(auroraOutputFolder+outputilename, 'a') as f:
             json.dump(auroraDict, f)
 
-        unknown205OutputFolder = "../../structNew/inunknown205/%s/" % (date)
+        unknown205OutputFolder = "../../structNewNew/inunknown205/%s/" % (date)
         if not os.path.exists(unknown205OutputFolder):
             os.makedirs(unknown205OutputFolder)
         with open(unknown205OutputFolder+outputilename, 'a') as f:
             json.dump(unknown205Dict, f)
 
-        othersOutputFolder = "../../structNew/inothers/%s/" % (date)
+        othersOutputFolder = "../../structNewNew/inothers/%s/" % (date)
         if not os.path.exists(othersOutputFolder):
             os.makedirs(othersOutputFolder)
         with open(othersOutputFolder+outputilename, 'a') as f:

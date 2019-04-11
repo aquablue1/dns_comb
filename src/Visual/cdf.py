@@ -7,7 +7,24 @@ import matplotlib.pyplot as plt
 import math
 import numpy as np
 import json
+import random
 
+
+def random_sample(n_array):
+    selected_list = []
+    for k in n_array:
+        rand_int = random.randint(0, 50)
+        if rand_int == 1:
+            selected_list.append(k)
+    return selected_list
+
+
+def data_analysis(n_array):
+    print("The length of array is %d" % len(n_array))
+    print("The maximum witnessed Value is %d" % np.max(n_array))
+    print("The minimum witnessed value is %d" % np.min(n_array))
+    print("The mean value is %f" % n_array.mean())
+    print(sum(list(n_array)))
 
 def doCDF():
     targetList = ["inakamai", "inaurora", "incampus", "incampusNew",
@@ -15,9 +32,9 @@ def doCDF():
 
     targetList += ["outakamai", "outcampus1", "outcampus2",
                    "outcpsc", "outothers", "outwebpax"]
-    targetList = ['outothers']
+    targetList = ['outcampus1']
     for target in targetList:
-        filenameIn = "../../exchange/totalSizeE/%sTotalInByteClusterExtrOne.log" % target
+        filenameIn = "../../exchange/TotalQueryByte/%s_TotalQueryByteCount.log" % target
         with open(filenameIn, 'r') as f:
             rawDict = json.load(f)
         globalInList = []
@@ -27,17 +44,25 @@ def doCDF():
                     globalInList += rawDict[time][key]
 
         globalInList = [int(i) for i in globalInList]
+        # print(sum(globalInList))
+        # globalInList = list(filter(lambda a: a != 0, globalInList))
+        globalInList = random_sample(globalInList)
         globalInList.sort()
-        xdata = np.array(globalInList)
-        a_norm = np.divide(xdata, xdata.sum())
+        x_indata = np.array(globalInList)
+        # data_analysis(x_indata)
+        a_norm = np.divide(x_indata, x_indata.sum())
+        x_indata = list(x_indata)
+        x_indata.append(1250)
         ydata = np.cumsum(a_norm)
-        logxdata = []
-        for i in xdata:
-            logxdata.append(i if i==0 else math.log10(i))
-        plt.plot(logxdata, ydata, label="Inbound", color="red")
+        ydata = list(ydata)
+        ydata.append(1)
+        # logxdata = []
+        # for i in xdata:
+        #     logxdata.append(i if i==0 else math.log10(i))
+        plt.plot(x_indata, ydata, label="Query", color="red", linestyle="-")
 
 
-        filename = "../../exchange/totalSizeE/%sTotalOutByteClusterExtrOne.log" % target
+        filename = "../../exchange/TotalReplyByte/%s_TotalReplyByteCount.log" % target
         with open(filename, 'r') as f:
             rawDict = json.load(f)
         globalOutList = []
@@ -47,18 +72,27 @@ def doCDF():
                     globalOutList += rawDict[time][key]
 
         globalOutList = [int(i) for i in globalOutList]
+        globalOutList = random_sample(globalOutList)
+        # print(sum(globalOutList))
+        # globalOutList = list(filter(lambda a: a != 0, globalOutList))
         globalOutList.sort()
-        xdata = np.array(globalOutList)
-        a_norm = np.divide(xdata, xdata.sum())
+        x_outdata = np.array(globalOutList)
+        # data_analysis(x_outdata)
+        a_norm = np.divide(x_outdata, x_outdata.sum())
+        x_outdata = list(x_outdata)
+        x_outdata.append(1250)
         ydata = np.cumsum(a_norm)
-        logxdata = []
-        for i in xdata:
-            logxdata.append(i if i==0 else math.log10(i))
+        ydata = list(ydata)
+        ydata.append(1)
+        # logxdata = []
+        # for i in xdata:
+        #     logxdata.append(i if i==0 else math.log10(i))
         # logxdata = [math.log10(i) for i in xdata]
-        plt.plot(logxdata, ydata, label="Outbound", color="blue")
+        plt.plot(x_outdata, ydata, label="Reply", color="blue", linestyle="--")
 
-        plt.xticks([0, 1, 2, 3, 4, 5, 6], ['0']+["$10^{%d}$"% i for i in range(1, 7)])
-        plt.xlim((0, 6))
+        # plt.xticks([0, 1, 2, 3, 4, 5, 6], ['0']+["$10^{%d}$"% i for i in range(1, 7)])
+        # plt.xlim((0, 6))
+        plt.xlim(0, 1250)
         plt.xlabel("Message Size (in Byte)")
 
         plt.ylim((0, 1.05))
@@ -67,9 +101,9 @@ def doCDF():
         plt.title(target)
         plt.legend(loc="best")
 
-        plt.savefig("../../figure/totalIOSize/%s_%s.pdf" % (target, "totalIOSize"), format='pdf')
-        plt.close()
-        # plt.show()
+        # plt.savefig("../../figure/totalIOSize/%s_%s.pdf" % (target, "totalIOSize"), format='pdf')
+        # plt.close()
+        plt.show()
         # print(b)
         print("job done %s" % target)
 
