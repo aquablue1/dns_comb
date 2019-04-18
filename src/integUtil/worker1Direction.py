@@ -10,6 +10,7 @@
 
 import json
 
+
 def doCountTask(filename):
     """
     count how many lines of record has return msg size equals 0
@@ -17,10 +18,10 @@ def doCountTask(filename):
     :return: List, [count]
     """
     f = open(filename)
-    dataDict = json.load(f)
-    count = len(dataDict)
-    dnsCount = 0
-    for k in dataDict:
-        if dataDict[k]["dns"]:
-            dnsCount += len(dataDict[k]["dns"])
-    return [count, dnsCount]
+    data_dict = json.load(f)
+    conn_count = len(data_dict)
+    dns_count = 0
+    for k in data_dict:
+        if data_dict[k]["dns"]:
+            dns_count += len(data_dict[k]["dns"])
+    return [conn_count, dns_count]

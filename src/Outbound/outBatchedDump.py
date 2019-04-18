@@ -9,6 +9,7 @@
 " webpax (136.159.190.37) and
 " others.
 " By Zhengping on 2019-01-05
+" Updated on 2019-03-25
 """
 
 import sys
@@ -110,7 +111,9 @@ def batchedDump(direction, date):
             dnsList = [line_list[dnsFTL["transID"]], line_list[dnsFTL["rtt"]],
                        line_list[dnsFTL["query"]], line_list[dnsFTL["answers"]],
                        line_list[dnsFTL["ttls"]], line_list[dnsFTL["type"]],
-                       line_list[dnsFTL["error"]]]
+                       line_list[dnsFTL["error"]], line_list[dnsFTL["AA"]],
+                       line_list[dnsFTL["TC"]], line_list[dnsFTL["RD"]],
+                       line_list[dnsFTL["RA"]], line_list[dnsFTL["rejected"]]]
             try:
                 if not targetDict[uid]["dns"]:
                     targetDict[uid]["dns"] = []
@@ -147,37 +150,37 @@ def batchedDump(direction, date):
 
         # output all the dicts as json file.
         outputilename = "%s_%s.log" % (date, hour)
-        akamaiOutputFolder = "../../structNew/outakamai/%s/" % (date)
+        akamaiOutputFolder = "../../structNewNew/outakamai/%s/" % (date)
         if not os.path.exists(akamaiOutputFolder):
             os.makedirs(akamaiOutputFolder)
         with open(akamaiOutputFolder+outputilename, 'a') as f:
             json.dump(akamaiDict, f)
 
-        campus1OutputFolder = "../../structNew/outcampus1/%s/" % (date)
+        campus1OutputFolder = "../../structNewNew/outcampus1/%s/" % (date)
         if not os.path.exists(campus1OutputFolder):
             os.makedirs(campus1OutputFolder)
         with open(campus1OutputFolder+outputilename, 'a') as f:
             json.dump(campus1Dict, f)
 
-        campus2OutputFolder = "../../structNew/outcampus2/%s/" % (date)
+        campus2OutputFolder = "../../structNewNew/outcampus2/%s/" % (date)
         if not os.path.exists(campus2OutputFolder):
             os.makedirs(campus2OutputFolder)
         with open(campus2OutputFolder+outputilename, 'a') as f:
             json.dump(campus2Dict, f)
 
-        cpscOutputFolder = "../../structNew/outcpsc/%s/" % (date)
+        cpscOutputFolder = "../../structNewNew/outcpsc/%s/" % (date)
         if not os.path.exists(cpscOutputFolder):
             os.makedirs(cpscOutputFolder)
         with open(cpscOutputFolder+outputilename, 'a') as f:
             json.dump(cpscDict, f)
 
-        webpaxOutputFolder = "../../structNew/outwebpax/%s/" % (date)
+        webpaxOutputFolder = "../../structNewNew/outwebpax/%s/" % (date)
         if not os.path.exists(webpaxOutputFolder):
             os.makedirs(webpaxOutputFolder)
         with open(webpaxOutputFolder+outputilename, 'a') as f:
             json.dump(webpaxDict, f)
 
-        othersOutputFolder = "../../structNew/outothers/%s/" % (date)
+        othersOutputFolder = "../../structNewNew/outothers/%s/" % (date)
         if not os.path.exists(othersOutputFolder):
             os.makedirs(othersOutputFolder)
         with open(othersOutputFolder+outputilename, 'a') as f:

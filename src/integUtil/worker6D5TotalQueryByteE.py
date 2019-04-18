@@ -29,17 +29,19 @@ def doCollectTask(filename, topK):
         dstIP = dataDict[key]["addr"][2]
         if srcIP.startswith("136.159."):
             # Which means srcIP is within our campus. it should be an outbound traffic
-            if dataDict[key]["conn"][1] != "-":
-                try:
-                    allOutCollect[getIPCluster(dstIP)].append(dataDict[key]["conn"][1])
-                except KeyError:
-                    allOutCollect[getIPCluster(dstIP)] = []
-                    allOutCollect[getIPCluster(dstIP)].append(dataDict[key]["conn"][1])
+            try:
+                allOutCollect[getIPCluster(dstIP)].append(dataDict[key]["conn"][4])
+            except KeyError:
+                allOutCollect[getIPCluster(dstIP)] = []
+                allOutCollect[getIPCluster(dstIP)].append(dataDict[key]["conn"][4])
         else:
-            if dataDict[key]["conn"][2] != "-":
-                try:
-                    allOutCollect[getIPCluster(srcIP)].append( dataDict[key]["conn"][2])
-                except KeyError:
-                    allOutCollect[getIPCluster(srcIP)] = []
-                    allOutCollect[getIPCluster(srcIP)].append(dataDict[key]["conn"][2])
+            try:
+                allOutCollect[getIPCluster(srcIP)].append(dataDict[key]["conn"][4])
+            except KeyError:
+                allOutCollect[getIPCluster(srcIP)] = []
+                allOutCollect[getIPCluster(srcIP)].append(dataDict[key]["conn"][4])
     return allOutCollect
+
+
+
+

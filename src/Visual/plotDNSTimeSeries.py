@@ -26,6 +26,7 @@ def getData(filename):
         rawData = json.load(f)[targetIPC]
     print(len(rawData))
     print(rawData)
+    exit(0)
     reversedCount = 0
     NSCount = 0
     PhysNSCount = 0

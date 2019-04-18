@@ -20,13 +20,14 @@ FieldToLoc = {
     "type"      : 13,
     # ""        : 14,
     "error"     : 15,
-    # ""        : 16,
-    # ""        : 18,
-    # ""        : 19,
-    # ""        : 20,
+    "AA"        : 16,
+    "TC"        : 17,
+    "RD"        : 18,
+    "RA"        : 19,
+    "Z"         : 20,
     "answers"   : 21,
     "ttls"      : 22,
-    # ""        : 23,
+    "rejected"  : 23,
 }
 
 LocToField = {v: k for k, v in FieldToLoc.items()}
