@@ -25,11 +25,11 @@ def do_scatter(filename):
         occurance = total_size_counter[size_info]
         transparent = math.log10(occurance)/max_count
         color = (1, 0, 0, transparent)
-        plt.scatter([q_size], [r_size], color=color, marker="o", s=8)
-    plt.plot([0, 800], [0, 800], color="black", linewidth=1, linestyle="--")
+        plt.scatter([q_size], [r_size], color=color, marker="o", s=10)
+    plt.plot([0, 1200], [0, 1200], color="black", linewidth=1, linestyle="--")
 
-    plt.xlim((0, 800))
-    plt.ylim((0, 800))
+    plt.xlim((0, 1200))
+    plt.ylim((0, 1200))
 
     plt.xlabel("Query Size (Byte)")
     plt.ylabel("Response Size (Byte)")
@@ -39,7 +39,7 @@ def do_scatter(filename):
 
 if __name__ == '__main__':
     module_list = ["inakamai", "incpsc", "incampus", "outakamai", "outcpsc", "outcampus1"]
-    # module_list = [ "incpsc", "outcampus1"]
+    module_list = ["inakamai", "incpsc", "incampus"]
     for module_name in module_list:
         filename_t = "../../exchange/TotalQueryReply/%s_TotalQueryReplyE.log" % module_name
         do_scatter(filename_t)
