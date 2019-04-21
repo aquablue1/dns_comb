@@ -14,11 +14,11 @@ import json
 index = 1
 
 
+
 def get_target_list(filename):
     with open(filename, 'r') as f:
         target_list = json.load(f)["target"]
     return target_list
-
 
 class ScannerLocator:
     def __init__(self, target_sub, date_range=None):
