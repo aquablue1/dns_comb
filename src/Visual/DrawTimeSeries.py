@@ -68,12 +68,12 @@ class TimeSeriesPlot:
                 for line in fileReader(filename):
                     line_list = line.strip().split("\t")
                     # Most of the modifications happen here.
-                    data_dict[line_list[0]] += (int(line_list[1]))
+                    # data_dict[line_list[0]] += (int(line_list[1]))
                     # For Incoming traffic volume count
-                    # data_dict[line_list[0]] += (int(line_list[1]) + int(line_list[4]))
+                    data_dict[line_list[0]] += (int(line_list[1]) + int(line_list[4]))
 
                     # For Outgoing traffic volume count
-                    # data_dict[line_list[0]] += (int(line_list[2]) + int(line_list[3]))
+                    data_dict[line_list[0]] += (int(line_list[2]) + int(line_list[3]))
         return data_dict
 
     def paint(self):
@@ -89,30 +89,23 @@ class TimeSeriesPlot:
 
         x_data = list(range(len(y_data)))
 
-        # self.ax.plot(x_data, y_data, label=self.module_name, color=color_dict[self.module_name])
-        self.ax.plot(x_data, y_data, label="Total Session Count", color="black", linewidth=1)
-        self.decoration()
+        self.ax.plot(x_data, y_data, label=self.module_name, color=color_dict[self.module_name])
 
     def decoration(self):
         # self.ax.set_xlim(self.time_range["start"], self.time_range["end"])
         # max_y_lim = max([int(raw[3]) for raw in self.load_raw_data()] +
         #                 [int(raw[4]) for raw in self.load_raw_data()])
-        max_y_lim = 1600000
-        max_x_lim = 168
-
-        for x_loc in range(24, max_x_lim, 24):
-            self.ax.plot([x_loc, x_loc], [0, max_y_lim], linewidth=0.5, color="black", linestyle="--")
-
+        max_y_lim = 700_000
+        max_x_lim = 240
         self.ax.set_ylim(0, max_y_lim)
         self.ax.set_xlim(0, max_x_lim)
         self.ax.set_xticks(list(range(0, max_x_lim+24, 24)))
-        self.ax.set_xticklabels(["2018-09-%s" % str(d).zfill(2) for d in range(3, 11)], rotation=15)
+        self.ax.set_xticklabels(["2018-09-%s" % str(d).zfill(2) for d in range(1, 12)], rotation=15)
 
-        self.ax.set_yticks(list(range(0, max_y_lim+1, 200000)))
-        self.ax.set_yticklabels(["0"] + ["$%0.1fx10^{6}$" % base for base in np.arange(1, 28, 2)])
+        self.ax.set_yticks(list(range(0, max_y_lim+1, 100_000)))
+        self.ax.set_yticklabels(["0"] + ["$%dx10^{5}$" % base for base in range(1, 28, 1)])
 
-        self.ax.set_ylabel("Session Count (per hour)", fontsize=15)
-
+        self.ax.set_ylabel("Session Count (per hour)")
         handles, labels = plt.gca().get_legend_handles_labels()
         i = 1
         while i < len(labels):
@@ -146,40 +139,40 @@ class TimeSeriesPlot:
 
 if __name__ == '__main__':
     # src_folder_t = "../../exchange/totalCount"
-    # src_folder_t = "../../exchange/OverallVolumeCollector/"
-    src_folder_t = "../../exchange/totalCount"
+    src_folder_t = "../../exchange/OverallVolumeCollector/"
+    # src_folder_t = "../../exchange/totalCount"
     date_range_t = ["2018-09-03", "2018-09-10"]
-    # date_range_t = ["2018-09-01", "2018-09-11"]
+    date_range_t = ["2018-09-01", "2018-09-11"]
     module_list = ["incampus",  "incpsc", "inothers", "inakamai",
                    "incampusNew", "inphys", "inunknown205"]
     # color_list = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
     color_list = ["#1f77b4", "#ff7f0e", "#2ca02c", "#d42728",
                   "#9467bd", "#8c564b", "#e377c2", "#7f7f7f"]
-    module_list = ["outcampus1", "outcampus2",
-                   "outcpsc", "outakamai", "outothers"]
-    color_dict = dict([(module, color) for module, color in zip(module_list, color_list)])
-    module_list = ["inunknown205"]
-    module_list = ["incampus", "incpsc"]
-    module_list = ["inothers", "inakamai"]
-    module_list = ["incampusNew", "inphys"]
-    module_list = ["outakamai", "outothers"]
-    # module_list = ["outcampus1", "outcampus2", "outcpsc"]
     # module_list = ["outcampus1", "outcampus2",
     #                "outcpsc", "outakamai", "outothers"]
-    # module_list = ["incampus",  "incpsc", "inothers", "inakamai",
-    #                "incampusNew", "inphys", "inunknown205"]
+    color_dict = dict([(module, color) for module, color in zip(module_list, color_list)])
+    # module_list = ["inunknown205"]
+    # module_list = ["incampus", "incpsc"]
+    # module_list = ["inothers", "inakamai"]
+    # module_list = ["incampusNew", "inphys"]
+    # module_list = ["outakamai", "outothers"]
+    module_list = ["outcampus1", "outcampus2", "outcpsc"]
+    module_list = ["outcampus1", "outcampus2",
+                   "outcpsc", "outakamai", "outothers"]
+    module_list = ["incampus",  "incpsc", "inothers", "inakamai",
+                   "incampusNew", "inphys", "inunknown205"]
     # module_list = ["outakamai", "outcampus1", "outcampus2",
     #                "outcpsc", "outothers"]
+    module_list = [""]
 
     # module_list = ["inothers"]
-    module_list = [""]
-    ax = plt.figure(figsize=(8, 6)).add_subplot(111)
+    ax = plt.figure().add_subplot(111)
     for module_name_t in module_list:
         print("Current Module Name is %s." % module_name_t)
         tsp = TimeSeriesPlot(src_folder_t, module_name_t, date_range_t, ax)
-        tsp.paint()
+        # tsp.paint()
         # tsp.decoration()
-        # tsp.statistics()
+        tsp.statistics()
         print("============================================")
     print("==================== END =======================")
-    plt.show()
+
