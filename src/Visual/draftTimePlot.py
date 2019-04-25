@@ -95,7 +95,7 @@ class timePlot():
                    rotation=24)
 
         plt.yticks([math.log10(0.1), math.log10(1), math.log10(10), math.log10(100),
-                    math.log10(1_000), math.log10(10_000), math.log10(100_000)],
+                    math.log10(1000), math.log10(10000), math.log10(100000)],
                    ["0"]+["$10^{%d}$" % exp for exp in range(0, 6)])
 
         if xLabel:
@@ -159,11 +159,11 @@ if __name__ == '__main__':
         plt.xticks(list(range(1, 24*10+1, 24)), ["2018-09-%s" % str(day).zfill(2) for day in range(1, 11)],
                    rotation=24)
 
-        ysrc = [1, 10, 100, 1_000, 10_000, 100_000, 1_000_000, 10_000_000, 100_000_000]
+        ysrc = [1, 10, 100, 1000, 10000, 100000, 1000000, 10000000, 100000000]
         plt.yticks([math.log10(i) for i in ysrc],
                    ["0"]+["$10^{%d}$" % exp for exp in range(1, 9)])
         #
-        plt.ylim((0,math.log10(100_000_000)))
+        plt.ylim((0,math.log10(100000000)))
         plt.title(target)
         plt.legend(loc="best")
         plt.ylabel("Size (in KB)")

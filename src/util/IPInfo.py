@@ -17,7 +17,7 @@ def getIPInfo(ip):
     try:
         result = urllib.request.urlopen(api).read()
         result = json.loads(result)
-        print("GET IP %s, INFO %s" % (ip, result))
+        # print("GET IP %s, INFO %s" % (ip, result))
     except:
         print("Cannot find: %s" % api)
         return None

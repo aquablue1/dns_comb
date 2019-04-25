@@ -33,7 +33,8 @@ class ScannerLocator:
 
     def _get_folders_for_module(self, module_name="inothers"):
         target_daily_folders = []
-        module_folder_name = "../../structNewNew/%s/" % module_name
+        module_list = ["inakamai", "inaurora", "inphys", "incampus", "incampusNew",
+                   "incpsc", "inothers", "inunknown205"]
         start, end = self.date_range["start"], self.date_range["end"]
 
         date_start = datetime.datetime(int(start.split("-")[0]),
@@ -43,15 +44,18 @@ class ScannerLocator:
                                      int(end.split("-")[1]),
                                      int(end.split("-")[2]))
 
-        module_folder = folderReader(module_folder_name)
-        for daily_folder in module_folder:
-            # (daily_folder)
-            date_string = daily_folder.split("/")[-1]
-            date_current = datetime.datetime(int(date_string.split("-")[0]),
-                                             int(date_string.split("-")[1]),
-                                             int(date_string.split("-")[2]))
-            if date_start <= date_current < date_end:
-                target_daily_folders.append(daily_folder)
+        for module_name in module_list:
+            module_folder_name = "../../structNewNew/%s/" % module_name
+
+            module_folder = folderReader(module_folder_name)
+            for daily_folder in module_folder:
+                # (daily_folder)
+                date_string = daily_folder.split("/")[-1]
+                date_current = datetime.datetime(int(date_string.split("-")[0]),
+                                                 int(date_string.split("-")[1]),
+                                                 int(date_string.split("-")[2]))
+                if date_start <= date_current < date_end:
+                    target_daily_folders.append(daily_folder)
 
         return target_daily_folders
 

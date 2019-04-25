@@ -107,7 +107,7 @@ class timePlot():
                    rotation=24)
 
         plt.yticks([math.log10(0.1), math.log10(1), math.log10(10), math.log10(100),
-                    math.log10(1_000), math.log10(10_000), math.log10(100_000)],
+                    math.log10(1000), math.log10(10000), math.log10(100000)],
                    ["0"]+["$10^{%d}$" % exp for exp in range(0, 6)])
 
         if xLabel:
